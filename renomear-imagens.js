@@ -1,0 +1,57 @@
+const fs = require('fs');
+const path = require('path');
+
+const pasta = 'E:\\turis-hub\\public\\Frank';
+
+// Lista de arquivos atuais (pegue do seu relatório)
+const arquivosAtuais = [
+  'G0021834.JPG', 'G0021835.JPG', 'G0051188.JPG', 'G0061224.JPG', 'G0061225.JPG',
+  'G0061884.JPG', 'G0061885.JPG', 'G0071910.JPG', 'G0071926.JPG', 'G0081945.JPG',
+  'G0081946.JPG', 'G0091961.JPG', 'G0091962.JPG', 'G0091963.JPG', 'G0101524.JPG',
+  'G0101527.JPG', 'G0101548.JPG', 'G0111569.JPG', 'G0111570.JPG', 'G0121625.JPG',
+  'G0121626.JPG', 'G0131731.JPG', 'G0131732.JPG', 'G0141768.JPG', 'G0141769.JPG',
+  'G0232388.JPG', 'GOPR1315.JPG', 'GOPR1317.JPG', 'IMG_0204.JPG', 'IMG_0206.JPG',
+  'IMG_0207.JPG', 'IMG_0208.JPG', 'IMG_0210.JPG', 'IMG_0211.JPG', 'IMG_0213.JPG',
+  'IMG_0215.JPG', 'IMG_0216.JPG', 'IMG_0217.JPG', 'IMG_0218.JPG', 'IMG_0219.JPG',
+  'IMG_0220.JPG', 'IMG_0221.JPG', 'IMG_0222.JPG', 'IMG_0223.JPG', 'IMG_0224.JPG',
+  'IMG_0225.JPG', 'IMG_0226.JPG', 'IMG_0227.JPG', 'IMG_0228.JPG', 'IMG_0229.JPG',
+  'IMG_0230.JPG', 'IMG_0231.JPG', 'IMG_0232.JPG', 'IMG_0233.JPG', 'IMG_0234.JPG',
+  'IMG_0235.JPG', 'IMG_0236.JPG', 'IMG_0237.JPG', 'IMG_0238.JPG', 'IMG_0239.JPG',
+  'IMG_0240.JPG', 'IMG_0241.JPG', 'IMG_0242.JPG', 'IMG_0243.JPG', 'IMG_0244.JPG',
+  'IMG_0245.JPG', 'IMG_0246.JPG', 'IMG_0247.JPG', 'IMG_0248.JPG', 'IMG_0249.JPG',
+  'IMG_0250.JPG', 'IMG_0251.JPG', 'IMG_0252.JPG', 'IMG_0253.JPG', 'IMG_0254.JPG',
+  'IMG_0255.JPG', 'IMG_0256.JPG', 'IMG_0257.JPG', 'IMG_0258.JPG', 'IMG_0259.JPG',
+  'IMG_0260.JPG', 'IMG_0261.JPG', 'IMG_0262.JPG', 'IMG_0263.JPG', 'IMG_0264.JPG',
+  'IMG_0265.JPG', 'IMG_0266.JPG', 'IMG_0267.JPG', 'IMG_0268.JPG', 'IMG_0269.JPG',
+  'IMG_0270.JPG', 'IMG_0271.JPG', 'IMG_0272.JPG', 'IMG_0273.JPG', 'IMG_0274.JPG',
+  'IMG_0275.JPG', 'IMG_0276.JPG', 'IMG_0277.JPG', 'IMG_0278.JPG', 'IMG_0279.JPG',
+  'IMG_0280.JPG', 'IMG_0281.JPG', 'IMG_0282.JPG', 'IMG_0283.JPG', 'IMG_0284.JPG',
+  'IMG_0285.JPG', 'IMG_0286.JPG', 'IMG_0287.JPG', 'IMG_0288.JPG', 'IMG_0289.JPG',
+  'IMG_0290.JPG', 'IMG_0291.JPG', 'IMG_0292.JPG', 'IMG_0293.JPG', 'IMG_0294.JPG',
+  'IMG_0295.JPG', 'IMG_0296.JPG', 'IMG_0298.JPG', 'IMG_0299.JPG', 'IMG_0300.JPG',
+  'IMG_0301.JPG', 'IMG_0302.JPG', 'IMG_5404.JPEG', 'IMG_5405.JPEG', 'IMG_8094.JPEG',
+  'IMG_8095.JPEG'
+];
+
+// Nomes antigos que o código espera
+const nomesAntigos = [
+  'IMG_3433.JPG', 'IMG_3434.JPG', 'IMG_3435.JPG', 'IMG_3436.JPG', 'IMG_3437.JPG',
+  'IMG_3438.JPG', 'IMG_3439.JPG', 'IMG_3440.JPG', 'IMG_3441.JPG', 'IMG_3442.JPG',
+  'IMG_3443.JPG', 'IMG_3444.JPG', 'IMG_3445.JPG', 'IMG_3446.JPG', 'IMG_3447.JPG',
+  'IMG_3448.JPG', 'IMG_3449.JPG', 'IMG_3450.JPG', 'IMG_3451.JPG', 'IMG_3452.JPG',
+  'IMG_3453.JPG', 'IMG_3454.JPG', 'IMG_3455.JPG', 'IMG_3456.JPG'
+];
+
+console.log('🔄 RENOMEANDO IMAGENS...\n');
+
+for (let i = 0; i < arquivosAtuais.length && i < nomesAntigos.length; i++) {
+  const antigo = path.join(pasta, arquivosAtuais[i]);
+  const novo = path.join(pasta, nomesAntigos[i]);
+  
+  if (fs.existsSync(antigo)) {
+    fs.renameSync(antigo, novo);
+    console.log(`✅ ${arquivosAtuais[i]} → ${nomesAntigos[i]}`);
+  }
+}
+
+console.log('\n🎉 Renomeação concluída!');

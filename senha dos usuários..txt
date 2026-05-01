@@ -1,0 +1,6 @@
+ RESUMO DOS USUÁRIOS
+Usuário		Senha		Tipo
+jrerzinger	984698@Ju	👑 Usuário principal
+frank		provider@123	🏢 Ofertante (teste)
+turista		turista@t	🧳 Consumidor (teste)
+sponsor3	sponsor@123	🤝 Patrocinador (teste)

@@ -1,0 +1,5 @@
+http://localhost:3000/register Cadastro de usuário (escolher perfil Ofertante)
+http://localhost:3000/login Fazer login com o usuário cadastrado
+http://localhost:3000/provider/profile Completar perfil do ofertante (todos os campos + máscaras)
+http://localhost:3000/provider/attractions/new Cadastrar uma nova atração
+http://localhost:3000/provider/attractions/[id] Página de detalhes da atração (deve redirecionar automaticamente)

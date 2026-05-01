@@ -1,0 +1,1 @@
+SELECT COUNT(*) FROM bookings WHERE "consumerId" = '52cde9b7-2895-4c9d-bfed-9c96bb3ce5cd';

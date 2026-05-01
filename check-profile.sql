@@ -1,0 +1,1 @@
+SELECT * FROM consumer_profiles WHERE "userId" = '52cde9b7-2895-4c9d-bfed-9c96bb3ce5cd';

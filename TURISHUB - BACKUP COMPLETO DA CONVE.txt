@@ -1,0 +1,101 @@
+Estou desenvolvendo um site que é para ser a mesma base que o AIRBNB tem, o arquivo PDF tem a descrição completa de como deve ser a plataforma e tipo de estrutura. Tem um arquivo PDF que mostra. o Resumo das ultimas atividades esta abaixo. Os arquivos que vc precisar eu vou compartilhar. Tente sempre executar uma atividade por vez, entretanto, não se limite quando houver interação entre mais paginas para correção e analise. Preciso deixar o projeto estável e simular as devidas contratações, criar novos usuários e novas atrações. Por favor me ajude com isso? 
+
+
+
+TURISHUB - BACKUP COMPLETO DA CONVERSA
+Data: 17 de Abril de 2026
+Hora aproximada: Noite
+Status do Projeto: Next.js 16 + Prisma 7.7 + PostgreSQL
+Foco atual: Finalização do fluxo do Consumidor (página de perfil)
+RESUMO DO QUE FOI FEITO HOJE 
+
+Analisamos a página do Ofertante (/provider/profile) que funciona corretamente (carrega via API, inicia congelada, tem edição, salvar, logout e voltar).
+Tentamos replicar a mesma lógica para o Consumidor usando localStorage → não funcionou de forma estável.
+Decidimos criar uma API dedicada para o consumidor (/api/consumer/profile) seguindo o mesmo padrão da API do provider.
+Criamos várias versões da API e da página /consumer/profile/page.tsx.
+Último erro identificado:
+GET /api/consumer/profile?userId=... 404
+SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+(A rota da API não está sendo reconhecida pelo Next.js).
+
+ARQUIVOS PRINCIPAIS TRABALHADOS HOJE
+
+API do Provider (referência) – arquivo que você enviou:
+src/app/api/provider/profile/route.ts (completo com GET + POST, Prisma, validações, upsert)
+
+API do Consumidor – várias versões criadas:
+src/app/api/consumer/profile/route.ts
+
+Página do Consumidor – várias versões criadas:
+src/app/consumer/profile/page.tsx
+
+Dashboard do Consumidor:
+src/app/consumer/page.tsx (já estava funcionando anteriormente)
+
+
+PROBLEMAS IDENTIFICADOS
+
+A rota /api/consumer/profile está retornando 404 → Next.js não encontra o arquivo route.ts.
+Erro de parsing JSON porque a resposta é HTML de erro em vez de JSON.
+Dados da Maria não aparecem porque a API não está sendo carregada corretamente.
+Diferença entre localStorage (consumidor) e banco via Prisma (provider).
+
+PRÓXIMOS PASSOS (depois do backup)
+
+Verificar se a pasta está exatamente assim:textsrc/app/api/consumer/profile/route.ts
+Apagar a pasta .next e reiniciar o servidor (npm run dev).
+Testar novamente /consumer/profile após login como consumidor.
+
+
+ARQUIVOS MODIFICADOS HOJE
+
+src/app/consumer/page.tsx → Dashboard do Consumidor (versão final)
+src/app/consumer/profile/page.tsx → Perfil do Consumidor (versão final)
+src/app/attractions/page.tsx → Listagem de atrações (com botão de voltar)
+src/app/login/page.tsx → Ajuste de redirecionamento
+
+
+Próxima fase solicitada por você:
+
+Criar a página de detalhes da atração (/attractions/[id])
+Implementar o fluxo de contratação/reserva de atrações
+Mostrar no Dashboard as atrações já contratadas pelo usuário
+
+
+Como salvar este backup:
+
+Copie todo o texto acima (desde o título até o final).
+Abra o Bloco de Notas (Notepad).
+Cole o conteúdo.
+Salve como:
+TURISHUB_Backup_18-04-2026.txt
+
+
+Quer que eu continue agora com a próxima fase (página de detalhes da atração + fluxo de contratação)?
+É só dizer “sim” ou “vamos para a próxima fase” que eu começo imediatamente.
+Estou pronto! 🚀
+
+src/app/
+├── consumer/
+│   ├── page.tsx                    ← Dashboard do Consumidor
+│   └── profile/
+│       └── page.tsx                ← Perfil do Consumidor
+├── attractions/
+│   └── page.tsx                    ← Listagem de atrações
+├── provider/
+│   └── profile/
+│       └── page.tsx                ← Perfil do Ofertante
+├── login/
+│   └── page.tsx
+├── api/
+│   ├── consumer/
+│   │   └── profile/
+│   │       └── route.ts
+│   ├── provider/
+│   │   └── profile/
+│   │       └── route.ts
+│   └── attractions/
+│       └── route.ts                ← (já existe)
+├── attractions/[id]/
+│   └── page.tsx                    ← (ainda não criada)
+└── ...

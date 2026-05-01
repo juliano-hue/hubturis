@@ -1,0 +1,16 @@
+
+services:
+  db:
+    image: postgres:16.2-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 984698ju # <-- MUDE ESTA SENHA PARA ALGO SEGURO!
+      POSTGRES_DB: turishubdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

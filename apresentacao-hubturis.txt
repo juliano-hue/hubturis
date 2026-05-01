@@ -1,0 +1,202 @@
+================================================================================
+                    HUBTURIS - APRESENTAÇÃO PROFISSIONAL
+================================================================================
+
+================================================================================
+1. SUMÁRIO EXECUTIVO
+================================================================================
+
+Nome: HubTuris
+Segmento: Turismo, Experiências e Passeios
+Público-alvo: Viajantes nacionais e internacionais, fornecedores locais
+Modelo de negócio: Marketplace de experiências turísticas
+Estágio atual: MVP funcional - pronto para produção
+Diferencial: Conexão direta entre viajantes e fornecedores locais
+
+
+================================================================================
+2. O PROBLEMA QUE RESOLVEMOS
+================================================================================
+
+PROBLEMA                          | SOLUÇÃO HUBTURIS
+----------------------------------|-----------------------------------------
+Viajantes não encontram experiências autênticas | Curadoria de atrações locais
+Fornecedores não têm visibilidade digital | Plataforma exclusiva para divulgação
+Reservas manuais e inseguras | Sistema 100% online com confirmação automática
+Dificuldade de pagamento | Integração com PIX e cartões
+Falta de avaliações confiáveis | Sistema de reviews verificado
+
+
+================================================================================
+3. FUNCIONALIDADES PRINCIPAIS
+================================================================================
+
+PARA VIAJANTES:
+- Busca de atrações por cidade/categoria ✅
+- Filtros por preço, duração, avaliação ✅
+- Reserva online com confirmação instantânea ✅
+- Avaliação de experiências ✅
+- Favoritos e histórico ✅
+- E-mail de confirmação automático ✅
+
+PARA FORNECEDORES:
+- Cadastro de atrações ✅
+- Gestão de disponibilidade ✅
+- Painel de reservas ✅
+- Histórico de ganhos ✅
+- Calendário de atividades ✅
+
+PARA ADMINISTRADORES:
+- Dashboard completo ✅
+- Gestão de usuários ✅
+- Aprovação de fornecedores ✅
+- Relatórios financeiros ✅
+
+
+================================================================================
+4. TECNOLOGIA UTILIZADA
+================================================================================
+
+Componente         | Tecnologia                    | Por quê
+-------------------|-------------------------------|--------------------------------
+Frontend           | Next.js 16 + Tailwind CSS    | Performance e SEO
+Backend            | Next.js API Routes            | Monorepo simplificado
+Banco de Dados     | PostgreSQL                    | Confiabilidade e escalabilidade
+ORM                | Prisma                        | Segurança e produtividade
+Autenticação       | NextAuth.js                   | Segurança integrada
+E-mails            | Resend API                    | 3.000 e-mails/grátis mês
+Hospedagem         | Vercel (planejado)           | Infraestrutura gratuita
+
+
+================================================================================
+5. POTENCIAL DE MERCADO
+================================================================================
+
+TURISMO NO BRASIL - DADOS 2025/2026:
+- Turistas internacionais (2025): +6,3 milhões
+- Turistas domésticos: +50 milhões viagens/ano
+- Mercado de experiências: R$ 12 bilhões/ano
+- Crescimento esperado 2026: +15%
+
+PÚBLICO-ALVO (1º ANO):
+- Fornecedores cadastrados: 100
+- Atrações disponíveis: 500
+- Viajantes ativos: 10.000
+- Reservas/mês: 500
+- Ticket médio: R$ 150
+
+
+================================================================================
+6. PLANO FINANCEIRO (Estimativa 1º ano)
+================================================================================
+
+RECEITAS PROJETADAS:
+Fonte                          | Modelo          | Estimativa
+-------------------------------|-----------------|-------------
+Comissão sobre reservas        | 10-15%          | R$ 90.000
+Destaque de atrações (featured)| R$ 200/mês      | R$ 24.000
+Plano Pro (fornecedor)         | R$ 49/mês       | R$ 29.400
+TOTAL ANUAL                    |                 | R$ 143.400
+
+CUSTOS MENSAIS (APÓS PATROCÍNIO):
+Item                           | Custo          | Observação
+-------------------------------|----------------|------------------------
+Hospedagem Vercel              | R$ 0           | Plano Hobby (gratuito)
+Banco de dados (Neon)          | R$ 0           | 0.5GB grátis
+Domínio hubturis.com.br        | R$ 5/mês       | Já adquirido
+E-mails (Resend)               | R$ 0           | 3.000/mês grátis
+Suporte/Manutenção             | R$ 500         | Time parcial
+Marketing                      | R$ 1.000       | Redes sociais
+TOTAL MENSAL                   |                | R$ 1.505
+
+
+================================================================================
+7. DIFERENCIAIS COMPETITIVOS
+================================================================================
+
+Concorrente    | Fraqueza                          | HubTuris vantagem
+---------------|-----------------------------------|----------------------------
+TripAdvisor    | Taxas altas, interface antiga     | UX moderna, taxas justas
+GetYourGuide   | Poucos parceiros Brasil           | Foco 100% nacional
+Sympla         | Não focado em turismo             | Especialista em experiências
+
+NOSSO DIFERENCIAL ÚNICO:
+✅ Brasil 100% - Curadoria local
+✅ Fornecedor direto - Sem intermediários
+✅ Sistema completo - Reserva, pagamento, avaliação
+✅ Suporte humano - Atendimento personalizado
+
+
+================================================================================
+8. PRÓXIMOS PASSOS (Roadmap 30 dias)
+================================================================================
+
+Fase | Atividade                           | Prazo     | Status
+-----|-------------------------------------|-----------|--------
+1    | Publicação na Vercel                | Dia 1     | ⏳
+2    | Configuração domínio DNS            | Dia 1     | ⏳
+3    | Migração banco para Neon            | Dia 1-2   | ⏳
+4    | Ajustes responsividade mobile       | Dia 2-3   | ⏳
+5    | Cadastro 10 fornecedores beta       | Dia 3-7   | ⏳
+6    | Teste de carga (100 reservas)       | Dia 8-14  | ⏳
+7    | Lançamento público                  | Dia 15    | ⏳
+8    | Campanha marketing inicial          | Dia 15-30 | ⏳
+
+
+================================================================================
+9. CANAIS DE CONTATO
+================================================================================
+
+Site:       hubturis.com.br (em breve)
+E-mail:     contato@hubturis.com.br
+Redes:      @hubturis (Instagram, LinkedIn)
+
+
+================================================================================
+10. CONCLUSÃO
+================================================================================
+
+O HubTuris é uma plataforma tecnicamente pronta para entrar em produção. 
+Com um investimento inicial focado em marketing e aquisição de fornecedores, 
+podemos alcançar:
+
+✅ 100 fornecedores no primeiro mês
+✅ 500 atrações ativas
+✅ R$ 10.000+ em reservas/mês no 3º mês
+✅ Break-even (retorno do investimento) em 6 meses
+
+
+================================================================================
+11. APELO PARA PATROCÍNIO/PARCERIA
+================================================================================
+
+Buscamos:
+
+TIPO                     | DESCRIÇÃO
+-------------------------|-------------------------------------------
+Investidor anjo          | R$ 15.000 - R$ 30.000 para marketing
+Parceiro de mídia        | Divulgação em troca de participação
+Fornecedores âncora      | Cadastro gratuito vitalício para 10 primeiros
+
+Retorno ao patrocinador:
+- Participação de 5-10% (negociável)
+- Exposição em todas as comunicações
+- Vaga no conselho consultivo
+
+
+================================================================================
+12. CONTATO PARA PROPOSTAS
+================================================================================
+
+Interessado? Responda com:
+- Tipo de parceria desejada
+- Valor/cota disponível
+- Sugestão de contrapartida
+
+
+================================================================================
+                    HubTuris - Conectando viajantes às melhores experiências do Brasil
+================================================================================
+
+Documento gerado em: 24/04/2026
+Versão: 1.0 - MVP pronta para produção
