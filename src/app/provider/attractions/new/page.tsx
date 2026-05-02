@@ -1,10 +1,20 @@
 'use client';
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Calendar from 'react-calendar';
+
+// Importações dinâmicas para evitar o erro de build
+import dynamic from 'next/dynamic';
+
+// Carrega o calendário apenas no cliente
+const Calendar = dynamic(() => import('react-calendar').then(mod => mod.default), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
+});
+
 import 'react-calendar/dist/Calendar.css';
 
 interface ProviderData {
@@ -48,7 +58,7 @@ export default function NewAttractionPage() {
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Calendário
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [dateRange, setDateRange] = useState<Value>([new Date(), new Date()]);
@@ -58,7 +68,7 @@ export default function NewAttractionPage() {
 
   const estados = ['AC', 'AL', 'AP', 'AM', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
 
-  // FUNÇÕES DO CALENDÁRIO
+  // ========== FUNÇÕES ==========
   const onDateChange = (value: Value) => {
     setDateRange(value);
     if (value instanceof Date) {
@@ -103,12 +113,9 @@ export default function NewAttractionPage() {
     setAvailableSlots({ ...availableSlots, [date.toISOString()]: newSlots });
   };
 
-  // UPLOAD IMAGENS
   const processFiles = (files: FileList | File[]) => {
     const fileArray = Array.from(files);
-    const validFiles = fileArray.filter(file => 
-      file.type.startsWith('image/') || file.type.startsWith('video/')
-    );
+    const validFiles = fileArray.filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'));
     if (validFiles.length !== fileArray.length) setError('Apenas imagens e vídeos são permitidos');
     if (validFiles.length + images.length > 20) {
       setError('Máximo de 20 arquivos permitidos');
@@ -230,7 +237,7 @@ export default function NewAttractionPage() {
     fetchProvider();
   }, [isClient, router]);
 
-  // Se ainda não está no cliente, retorna loading vazio (evita pré-renderização)
+  // Se não está no cliente, retorna loading vazio (evita pré-renderização)
   if (!isClient) {
     return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
   }
@@ -325,7 +332,7 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
-          {/* CALENDÁRIO */}
+          {/* CALENDÁRIO - Só é renderizado no cliente */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
             <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">📅 Datas de Disponibilidade</label>
             <button type="button" onClick={() => setShowCalendar(!showCalendar)} className="mb-3 sm:mb-4 inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base min-h-[40px]">
