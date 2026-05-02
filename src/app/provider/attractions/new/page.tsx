@@ -1,6 +1,5 @@
 'use client';
 export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -29,6 +28,7 @@ type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 export default function NewAttractionPage() {
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
   const [provider, setProvider] = useState<ProviderData | null>(null);
   const [formData, setFormData] = useState({
@@ -56,6 +56,9 @@ export default function NewAttractionPage() {
   const [pricePerDate, setPricePerDate] = useState<{ [key: string]: number }>({});
   const [availableSlots, setAvailableSlots] = useState<{ [key: string]: number }>({});
 
+  const estados = ['AC', 'AL', 'AP', 'AM', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+
+  // FUNÇÕES DO CALENDÁRIO
   const onDateChange = (value: Value) => {
     setDateRange(value);
     if (value instanceof Date) {
@@ -100,52 +103,17 @@ export default function NewAttractionPage() {
     setAvailableSlots({ ...availableSlots, [date.toISOString()]: newSlots });
   };
 
-  useEffect(() => {
-    const fetchProvider = async () => {
-      try {
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-          router.push('/login');
-          return;
-        }
-
-        const response = await fetch(`/api/provider/profile?userId=${userId}`);
-        const data = await response.json();
-        
-        if (response.ok) {
-          setProvider(data);
-        } else {
-          router.push('/provider/profile');
-        }
-      } catch (error) {
-        console.error('Erro:', error);
-        router.push('/provider/profile');
-      }
-    };
-
-    fetchProvider();
-  }, [router]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
+  // UPLOAD IMAGENS
   const processFiles = (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     const validFiles = fileArray.filter(file => 
       file.type.startsWith('image/') || file.type.startsWith('video/')
     );
-    
-    if (validFiles.length !== fileArray.length) {
-      setError('Apenas imagens e vídeos são permitidos');
-    }
-    
+    if (validFiles.length !== fileArray.length) setError('Apenas imagens e vídeos são permitidos');
     if (validFiles.length + images.length > 20) {
       setError('Máximo de 20 arquivos permitidos');
       return;
     }
-    
     const newPreviews = validFiles.map(file => URL.createObjectURL(file));
     setImages(prev => [...prev, ...validFiles]);
     setImagePreviews(prev => [...prev, ...newPreviews]);
@@ -153,39 +121,16 @@ export default function NewAttractionPage() {
   };
 
   const handleImageClick = () => fileInputRef.current?.click();
-  
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      processFiles(e.target.files);
-    }
+    if (e.target.files && e.target.files.length > 0) processFiles(e.target.files);
   };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
+  const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      processFiles(e.dataTransfer.files);
-    }
+    e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
   };
-
   const removeImage = (index: number) => {
     URL.revokeObjectURL(imagePreviews[index]);
     setImages(prev => prev.filter((_, i) => i !== index));
@@ -203,9 +148,7 @@ export default function NewAttractionPage() {
           const data = await response.json();
           uploadedUrls.push(data.url);
         }
-      } catch (error) {
-        console.error(`Erro ao enviar ${file.name}:`, error);
-      }
+      } catch (error) { console.error(error); }
     }
     return uploadedUrls;
   };
@@ -214,14 +157,9 @@ export default function NewAttractionPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       const userId = localStorage.getItem('userId');
-      if (!userId) {
-        router.push('/login');
-        return;
-      }
-
+      if (!userId) { router.push('/login'); return; }
       const attractionResponse = await fetch('/api/provider/attractions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -233,12 +171,9 @@ export default function NewAttractionPage() {
           providerId: userId,
         }),
       });
-
       const attractionData = await attractionResponse.json();
       if (!attractionResponse.ok) throw new Error(attractionData.error || 'Erro ao criar atração');
-
       const attractionId = attractionData.id;
-
       if (images.length > 0) {
         const uploadedUrls = await uploadImages();
         if (uploadedUrls.length > 0) {
@@ -249,14 +184,12 @@ export default function NewAttractionPage() {
           });
         }
       }
-
       const availabilityData = selectedDates.map(date => ({
         attractionId,
         date: date.toISOString(),
         price: pricePerDate[date.toISOString()] || parseFloat(formData.price) || 0,
         maxParticipants: availableSlots[date.toISOString()] || parseInt(formData.maxCapacity) || 10,
       }));
-
       if (availabilityData.length > 0) {
         await fetch('/api/provider/availability', {
           method: 'POST',
@@ -264,20 +197,46 @@ export default function NewAttractionPage() {
           body: JSON.stringify({ availabilities: availabilityData }),
         });
       }
-
       router.push('/provider/my-attractions');
     } catch (error) {
-      console.error('❌ Erro:', error);
+      console.error(error);
       setError(error instanceof Error ? error.message : 'Erro ao cadastrar atração');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  const estados = ['AC', 'AL', 'AP', 'AM', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // ========== CLIENT-SIDE ONLY ==========
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Carregar dados do provedor (só no cliente)
+  useEffect(() => {
+    if (!isClient) return;
+    const fetchProvider = async () => {
+      try {
+        const userId = localStorage.getItem('userId');
+        if (!userId) { router.push('/login'); return; }
+        const response = await fetch(`/api/provider/profile?userId=${userId}`);
+        const data = await response.json();
+        if (response.ok) setProvider(data);
+        else router.push('/provider/profile');
+      } catch (error) { router.push('/provider/profile'); }
+    };
+    fetchProvider();
+  }, [isClient, router]);
+
+  // Se ainda não está no cliente, retorna loading vazio (evita pré-renderização)
+  if (!isClient) {
+    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+  }
 
   if (!provider) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="text-gray-500">Carregando...</div></div>;
+    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
   }
 
   return (
@@ -292,16 +251,19 @@ export default function NewAttractionPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
+          {/* Título */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Título da Atração *</label>
             <input type="text" name="title" required value={formData.title} onChange={handleInputChange} className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-base" />
           </div>
 
+          {/* Descrição */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Descrição Completa *</label>
             <textarea name="description" required rows={5} value={formData.description} onChange={handleInputChange} className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-base" />
           </div>
 
+          {/* Localização e Cidade */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Localização *</label>
@@ -313,6 +275,7 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
+          {/* Estado e Categoria */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
@@ -335,6 +298,7 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
+          {/* Preço e tipo */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Precificação *</label>
@@ -349,6 +313,7 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
+          {/* Duração e Capacidade */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Duração (horas)</label>
@@ -360,30 +325,25 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
-          {/* CALENDÁRIO - RESPONSIVO */}
+          {/* CALENDÁRIO */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
             <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">📅 Datas de Disponibilidade</label>
-            
             <button type="button" onClick={() => setShowCalendar(!showCalendar)} className="mb-3 sm:mb-4 inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base min-h-[40px]">
               {showCalendar ? 'Fechar Calendário' : '➕ Adicionar Datas'}
             </button>
-
             {showCalendar && (
               <div className="mb-4 sm:mb-6 p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50 overflow-x-auto">
                 <Calendar onChange={onDateChange} value={dateRange} selectRange={true} className="w-full border-0" />
                 <p className="text-xs sm:text-sm text-gray-500 mt-2">Clique em uma data para selecionar um dia, ou arraste para selecionar um intervalo.</p>
               </div>
             )}
-
             {selectedDates.length > 0 && (
               <div className="mt-4">
                 <h4 className="text-sm sm:text-md font-medium text-gray-700 mb-2 sm:mb-3">Datas Disponíveis: ({selectedDates.length})</h4>
                 <div className="space-y-2 sm:space-y-3 max-h-60 overflow-y-auto">
                   {selectedDates.sort((a, b) => a.getTime() - b.getTime()).map((date, index) => (
                     <div key={index} className="flex flex-wrap items-center gap-2 sm:gap-4 p-2 sm:p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1 min-w-[100px]">
-                        <span className="font-medium text-sm sm:text-base">{date.toLocaleDateString('pt-BR')}</span>
-                      </div>
+                      <div className="flex-1 min-w-[100px]"><span className="font-medium text-sm sm:text-base">{date.toLocaleDateString('pt-BR')}</span></div>
                       <div className="flex flex-wrap items-center gap-2">
                         <input type="number" value={pricePerDate[date.toISOString()] || formData.price} onChange={(e) => updateDatePrice(date, parseFloat(e.target.value))} step="0.01" className="w-24 sm:w-28 px-2 py-1 border rounded text-sm" placeholder="Preço" />
                         <input type="number" value={availableSlots[date.toISOString()] || formData.maxCapacity || 10} onChange={(e) => updateDateSlots(date, parseInt(e.target.value))} min="1" className="w-16 sm:w-20 px-2 py-1 border rounded text-sm" placeholder="Vagas" />
@@ -396,7 +356,7 @@ export default function NewAttractionPage() {
             )}
           </div>
 
-          {/* UPLOAD - RESPONSIVO */}
+          {/* UPLOAD */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
             <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">📸 Fotos e Vídeos (máximo 20)</label>
             <input type="file" ref={fileInputRef} multiple accept="image/*,video/*" onChange={handleImageChange} className="hidden" />
@@ -409,7 +369,6 @@ export default function NewAttractionPage() {
                 <p className="text-xs text-gray-500 mt-1">Imagens: JPG, PNG, WEBP (até 10MB) | Vídeos: MP4, WEBM (até 100MB)</p>
               </div>
             </div>
-
             {imagePreviews.length > 0 && (
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                 {imagePreviews.map((preview, index) => (
