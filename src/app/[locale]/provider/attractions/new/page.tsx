@@ -1,16 +1,11 @@
 'use client';
-export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 
-// Carrega o calendário apenas no cliente (SSR desabilitado)
-const Calendar = dynamic(() => import('react-calendar').then(mod => mod.default), {
-  ssr: false,
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
-});
+// Carrega o calendário apenas no cliente (SSR desabilitado) com React.lazy
+const Calendar = lazy(() => import('react-calendar').then(mod => ({ default: mod.default })));
 
 import 'react-calendar/dist/Calendar.css';
 
@@ -37,7 +32,7 @@ export default function NewAttractionPage() {
   const params = useParams();
   const locale = params?.locale || 'pt';
   const router = useRouter();
-  
+
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
   const [provider, setProvider] = useState<ProviderData | null>(null);
@@ -113,7 +108,6 @@ export default function NewAttractionPage() {
     setAvailableSlots({ ...availableSlots, [date.toISOString()]: newSlots });
   };
 
-  // ========== FUNÇÕES DE UPLOAD ==========
   const processFiles = (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     const validFiles = fileArray.filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'));
@@ -161,7 +155,6 @@ export default function NewAttractionPage() {
     return uploadedUrls;
   };
 
-  // ========== SUBMISSÃO ==========
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -223,7 +216,6 @@ export default function NewAttractionPage() {
     setIsClient(true);
   }, []);
 
-  // Carregar dados do provedor (só no cliente)
   useEffect(() => {
     if (!isClient) return;
     const fetchProvider = async () => {
@@ -337,7 +329,9 @@ export default function NewAttractionPage() {
             </button>
             {showCalendar && (
               <div className="mb-4 sm:mb-6 p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50 overflow-x-auto">
-                <Calendar onChange={onDateChange} value={dateRange} selectRange={true} className="w-full border-0" />
+                <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
+                  <Calendar onChange={onDateChange} value={dateRange} selectRange={true} className="w-full border-0" />
+                </Suspense>
                 <p className="text-xs sm:text-sm text-gray-500 mt-2">Clique em uma data para selecionar um dia, ou arraste para selecionar um intervalo.</p>
               </div>
             )}
