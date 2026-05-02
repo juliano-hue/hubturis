@@ -1,15 +1,10 @@
 'use client';
-export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-// Importações dinâmicas para evitar o erro de build
 import dynamic from 'next/dynamic';
 
-// Carrega o calendário apenas no cliente
 const Calendar = dynamic(() => import('react-calendar').then(mod => mod.default), {
   ssr: false,
   loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
