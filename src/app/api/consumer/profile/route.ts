@@ -21,12 +21,19 @@ export async function GET() {
 
     return NextResponse.json(user.consumerProfile);
   } catch (error) {
-    console.error("Erro ao buscar perfil:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return NextResponse.json({ error: "Erro no servidor" }, { status: 500 });
   }
 }
 
 export async function PUT(req: NextRequest) {
+  return handleSave(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handleSave(req);
+}
+
+async function handleSave(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -46,38 +53,13 @@ export async function PUT(req: NextRequest) {
 
     const updatedProfile = await prismadb.consumerProfile.upsert({
       where: { userId: user.id },
-      update: {
-        fullName,
-        cpf,
-        phone,
-        address,
-        city,
-        state,
-        paymentType,
-        cardNumber,
-        cardExpiry,
-        cardCvv,
-        cardBrand,
-      },
-      create: {
-        userId: user.id,
-        fullName,
-        cpf,
-        phone,
-        address,
-        city,
-        state,
-        paymentType,
-        cardNumber,
-        cardExpiry,
-        cardCvv,
-        cardBrand,
-      },
+      update: { fullName, cpf, phone, address, city, state, paymentType, cardNumber, cardExpiry, cardCvv, cardBrand },
+      create: { userId: user.id, fullName, cpf, phone, address, city, state, paymentType, cardNumber, cardExpiry, cardCvv, cardBrand },
     });
 
     return NextResponse.json({ success: true, profile: updatedProfile });
   } catch (error) {
     console.error("Erro ao salvar perfil:", error);
-    return NextResponse.json({ error: "Erro ao salvar" }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
