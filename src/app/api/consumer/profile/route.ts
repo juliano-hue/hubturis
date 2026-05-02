@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import { prismadb } from "@/lib/prismadb";
 
 export async function GET() {
   try {
@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prismadb.user.findUnique({
       where: { email: session.user.email },
       include: { consumerProfile: true },
     });
@@ -22,7 +22,7 @@ export async function GET() {
     return NextResponse.json(user.consumerProfile);
   } catch (error) {
     console.error("Erro ao buscar perfil:", error);
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
 
@@ -36,18 +36,15 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { fullName, cpf, phone, address, city, state, paymentType, cardNumber, cardExpiry, cardCvv, cardBrand } = body;
 
-    // Busca o user para pegar o id
-    const user = await prisma.user.findUnique({
+    const user = await prismadb.user.findUnique({
       where: { email: session.user.email },
-      include: { consumerProfile: true },
     });
 
     if (!user) {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    // Atualiza ou cria o perfil do consumidor
-    const updatedProfile = await prisma.consumerProfile.upsert({
+    const updatedProfile = await prismadb.consumerProfile.upsert({
       where: { userId: user.id },
       update: {
         fullName,
@@ -81,9 +78,6 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ success: true, profile: updatedProfile });
   } catch (error) {
     console.error("Erro ao salvar perfil:", error);
-    return NextResponse.json(
-      { error: "Erro ao salvar perfil. Tente novamente." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro ao salvar" }, { status: 500 });
   }
 }
