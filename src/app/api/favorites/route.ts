@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    const favoritesWithRating = favorites.map(fav => ({
+    const favoritesWithRating = favorites.map((fav: any) => ({
       ...fav,
       attraction: {
         ...fav.attraction,
