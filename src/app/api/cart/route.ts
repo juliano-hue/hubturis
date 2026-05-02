@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    const total = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const total = cartItems.reduce((sum: number, item: any) => sum + item.totalPrice, 0);
 
     return NextResponse.json({ items: cartItems, total });
   } catch (error) {
