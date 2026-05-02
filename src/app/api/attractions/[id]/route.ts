@@ -43,7 +43,7 @@ export async function GET(
 
     // Calcular média das avaliações
     const averageRating = attraction.reviews.length > 0
-      ? attraction.reviews.reduce((acc: number, r) => acc + r.rating, 0) / attraction.reviews.length
+      ? attraction.reviews.reduce((acc: number, r: { rating: number }) => acc + r.rating, 0) / attraction.reviews.length
       : 0;
 
     // Garantir que images seja sempre um array
