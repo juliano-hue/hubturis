@@ -46,6 +46,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        // Log para debug (aparecerá nos logs da Vercel)
+        console.log('🔑 JWT set role:', token.role);
       }
       return token;
     },
@@ -53,6 +55,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        console.log('👤 Session set role:', (session.user as any).role);
       }
       return session;
     }
