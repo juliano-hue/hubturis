@@ -18,7 +18,7 @@ export async function GET() {
     });
 
     // Calcular média para cada atração
-    const attractionsWithRating = attractions.map(attraction => ({
+    const attractionsWithRating = attractions.map((attraction: any) => ({
       ...attraction,
       averageRating: attraction.reviews.length > 0
         ? attraction.reviews.reduce((acc, r) => acc + r.rating, 0) / attraction.reviews.length
