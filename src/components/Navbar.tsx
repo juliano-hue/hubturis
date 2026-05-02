@@ -113,19 +113,39 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Desktop Menu - Links específicos para provedor */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
-            <Link href={isProvider ? '/provider/my-attractions' : `/${locale}/attractions`} className="text-gray-700 hover:text-blue-600 transition">
-              {t('explore')}
-            </Link>
-            <a href="#destinos" className="text-gray-700 hover:text-blue-600 transition">
-              {t('destinations')}
-            </a>
-            <a href="#categorias" className="text-gray-700 hover:text-blue-600 transition">
-              {t('categories')}
-            </a>
-            <a href="#depoimentos" className="text-gray-700 hover:text-blue-600 transition">
-              {t('testimonials')}
-            </a>
+            {isProvider ? (
+              <>
+                <Link href="/provider/dashboard" className="text-gray-700 hover:text-blue-600 transition">
+                  📊 Dashboard
+                </Link>
+                <Link href="/provider/my-attractions" className="text-gray-700 hover:text-blue-600 transition">
+                  🏖️ Minhas Atrações
+                </Link>
+                <Link href="/provider/attractions/new" className="text-gray-700 hover:text-blue-600 transition">
+                  ✨ Nova Atração
+                </Link>
+                <Link href="/provider/bookings" className="text-gray-700 hover:text-blue-600 transition">
+                  📅 Reservas
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href={isProvider ? '/provider/my-attractions' : `/${locale}/attractions`} className="text-gray-700 hover:text-blue-600 transition">
+                  {t('explore')}
+                </Link>
+                <a href="#destinos" className="text-gray-700 hover:text-blue-600 transition">
+                  {t('destinations')}
+                </a>
+                <a href="#categorias" className="text-gray-700 hover:text-blue-600 transition">
+                  {t('categories')}
+                </a>
+                <a href="#depoimentos" className="text-gray-700 hover:text-blue-600 transition">
+                  {t('testimonials')}
+                </a>
+              </>
+            )}
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -185,20 +205,40 @@ export default function Navbar() {
           </button>
         </div>
 
+        {/* Mobile Menu - Links específicos para provedor */}
         {menuOpen && (
           <div className="md:hidden mt-4 pt-4 border-t space-y-3 pb-3">
-            <Link href={isProvider ? '/provider/my-attractions' : `/${locale}/attractions`} className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
-              {t('explore')}
-            </Link>
-            <a href="#destinos" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
-              {t('destinations')}
-            </a>
-            <a href="#categorias" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
-              {t('categories')}
-            </a>
-            <a href="#depoimentos" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
-              {t('testimonials')}
-            </a>
+            {isProvider ? (
+              <>
+                <Link href="/provider/dashboard" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  📊 Dashboard
+                </Link>
+                <Link href="/provider/my-attractions" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  🏖️ Minhas Atrações
+                </Link>
+                <Link href="/provider/attractions/new" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  ✨ Nova Atração
+                </Link>
+                <Link href="/provider/bookings" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  📅 Reservas
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href={isProvider ? '/provider/my-attractions' : `/${locale}/attractions`} className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  {t('explore')}
+                </Link>
+                <a href="#destinos" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  {t('destinations')}
+                </a>
+                <a href="#categorias" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  {t('categories')}
+                </a>
+                <a href="#depoimentos" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  {t('testimonials')}
+                </a>
+              </>
+            )}
             
             {isLoggedIn ? (
               <>
