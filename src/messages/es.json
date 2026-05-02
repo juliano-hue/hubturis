@@ -271,6 +271,8 @@
     "cancelButton": "Cancelar",
     "successMessage": "¡Perfil actualizado con éxito!",
     "backToDashboard": "Volver al Dashboard",
-    "errorMessage": "Error al guardar el perfil"
+    "errorMessage": "Error al guardar el perfil",
+    "creditCard": "Número de Tarjeta",
+    "saving": "Guardando..."
   }
 }

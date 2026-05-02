@@ -271,6 +271,8 @@
     "cancelButton": "Cancel",
     "successMessage": "Profile updated successfully!",
     "backToDashboard": "Back to Dashboard",
-    "errorMessage": "Error saving profile"
+    "errorMessage": "Error saving profile",
+    "creditCard": "Card Number",
+    "saving": "Saving..."
   }
 }

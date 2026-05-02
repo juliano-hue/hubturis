@@ -41,20 +41,54 @@ export async function POST(req: NextRequest) {
     // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Criar usuário
+    // Criar usuário COM os perfis correspondentes
     const user = await prismadb.user.create({
       data: {
         name: name || null,
         email,
         password: hashedPassword,
         role: role as 'CONSUMER' | 'PROVIDER' | 'ADMIN',
+        // Cria o perfil automaticamente baseado no papel do usuário
+        ...(role === 'CONSUMER' && {
+          consumerProfile: {
+            create: {
+              fullName: name || email,
+              cpf: '',
+              phone: '',
+              address: '',
+              city: '',
+              state: '',
+              paymentType: '',
+            }
+          }
+        }),
+        ...(role === 'PROVIDER' && {
+          providerProfile: {
+            create: {
+              fullName: name || email,
+              cpf: '',
+              phone: '',
+              address: '',
+              city: '',
+              state: '',
+              zipCode: '',
+              bankName: '',
+              agency: '',
+              accountNumber: '',
+              accountType: 'CORRENTE',
+              pixKey: '',
+            }
+          }
+        })
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        createdAt: true
+        createdAt: true,
+        consumerProfile: role === 'CONSUMER',
+        providerProfile: role === 'PROVIDER'
       }
     });
 

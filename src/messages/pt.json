@@ -266,12 +266,15 @@
     "paymentType": "Tipo de Pagamento",
     "cardNumber": "Número do Cartão",
     "cardExpiry": "Validade",
+    "cardCvv": "CVV",
     "cardBrand": "Bandeira",
     "editButton": "Editar Perfil",
     "saveButton": "Salvar Alterações",
     "cancelButton": "Cancelar",
     "successMessage": "Perfil atualizado com sucesso!",
     "errorMessage": "Erro ao salvar perfil",
-    "backToDashboard": "Voltar para o Dashboard"
+    "backToDashboard": "Voltar para o Dashboard",
+    "creditCard": "Número do Cartão",
+    "saving": "Salvando..."
   }
 }
