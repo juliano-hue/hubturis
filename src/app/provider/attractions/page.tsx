@@ -1,9 +1,11 @@
 'use client';
 export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function ProviderAttractionsPage() {
+  const [isClient, setIsClient] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -12,14 +14,18 @@ export default function ProviderAttractionsPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Verificação simples de role (PROVIDER)
   useEffect(() => {
-    const userRole = localStorage.getItem('userRole'); // Vamos simular por enquanto
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+    const userRole = localStorage.getItem('userRole');
     if (userRole !== 'PROVIDER') {
       alert('Acesso permitido apenas para Ofertantes.');
-      router.push('/users'); // Redireciona para página de cadastro se não for provider
+      router.push('/users');
     }
-  }, [router]);
+  }, [isClient, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +34,7 @@ export default function ProviderAttractionsPage() {
     setLoading(true);
 
     try {
-      // Aqui vamos pegar o ID do provider (simulado por enquanto)
-      const providerId = "INSIRA_AQUI_O_ID_DO_PROVIDER"; // Temporário - vamos melhorar depois
-
+      const providerId = "INSIRA_AQUI_O_ID_DO_PROVIDER";
       const response = await fetch('/api/attractions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,6 +62,10 @@ export default function ProviderAttractionsPage() {
       setLoading(false);
     }
   };
+
+  if (!isClient) {
+    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+  }
 
   return (
     <main style={{ maxWidth: 800, margin: '40px auto', padding: 20 }}>
