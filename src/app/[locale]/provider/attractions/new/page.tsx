@@ -1,10 +1,12 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import ClientOnly from '@/components/ClientOnly';
 
-// Carrega o calendário apenas no cliente (SSR desabilitado) com React.lazy
+// Carrega o calendário apenas no cliente
 const Calendar = lazy(() => import('react-calendar').then(mod => ({ default: mod.default })));
 
 import 'react-calendar/dist/Calendar.css';
@@ -211,7 +213,6 @@ export default function NewAttractionPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // ========== CLIENT-SIDE ONLY ==========
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -321,7 +322,7 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
-          {/* CALENDÁRIO */}
+          {/* CALENDÁRIO - Com ClientOnly */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
             <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">📅 Datas de Disponibilidade</label>
             <button type="button" onClick={() => setShowCalendar(!showCalendar)} className="mb-3 sm:mb-4 inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base min-h-[40px]">
@@ -329,9 +330,11 @@ export default function NewAttractionPage() {
             </button>
             {showCalendar && (
               <div className="mb-4 sm:mb-6 p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50 overflow-x-auto">
-                <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
-                  <Calendar onChange={onDateChange} value={dateRange} selectRange={true} className="w-full border-0" />
-                </Suspense>
+                <ClientOnly>
+                  <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
+                    <Calendar onChange={onDateChange} value={dateRange} selectRange={true} className="w-full border-0" />
+                  </Suspense>
+                </ClientOnly>
                 <p className="text-xs sm:text-sm text-gray-500 mt-2">Clique em uma data para selecionar um dia, ou arraste para selecionar um intervalo.</p>
               </div>
             )}
