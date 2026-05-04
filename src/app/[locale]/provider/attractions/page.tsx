@@ -1,5 +1,4 @@
 'use client';
-export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -34,7 +33,7 @@ export default function ProviderAttractionsPage() {
     setLoading(true);
 
     try {
-      const providerId = "INSIRA_AQUI_O_ID_DO_PROVIDER";
+      const providerId = localStorage.getItem('userId') || "";
       const response = await fetch('/api/attractions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

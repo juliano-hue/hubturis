@@ -7,12 +7,26 @@ import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 
+// Fallback seguro para build (evita erro de pré-renderização)
+let safeT: (key: string) => string;
+try {
+  const { useTranslations: ut } = require('next-intl');
+  safeT = ut('common');
+} catch (e) {
+  safeT = (key: string) => key;
+}
+
 export default function Navbar() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoExists, setLogoExists] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const t = useTranslations('common');
+  let t;
+  try {
+    t = useTranslations('common');
+  } catch (e) {
+    t = safeT;
+  }
 
   const isLoggedIn = status === 'authenticated';
   const user = session?.user as any;

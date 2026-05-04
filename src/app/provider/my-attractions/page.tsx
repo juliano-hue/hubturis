@@ -1,5 +1,6 @@
 'use client';
-export const dynamic = 'force-dynamic';
+//export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -36,6 +37,7 @@ interface Attraction {
 }
 
 export default function MyAttractionsPage() {
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const [attractions, setAttractions] = useState<Attraction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,13 +47,19 @@ export default function MyAttractionsPage() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
     const interval = setInterval(() => {
       setFundoIndex((prev) => (prev + 1) % imagensDisponiveis.length);
     }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
+    if (!isClient) return;
     const userId = localStorage.getItem('userId');
     const role = localStorage.getItem('userRole');
     const name = localStorage.getItem('userName');
@@ -77,7 +85,7 @@ export default function MyAttractionsPage() {
         setError(err.message);
         setLoading(false);
       });
-  }, [router]);
+  }, [isClient, router]);
 
   const getImageUrl = (attraction: Attraction, index: number) => {
     if (attraction.images && attraction.images.length > 0) {
@@ -95,7 +103,7 @@ export default function MyAttractionsPage() {
     }).format(price);
   };
 
-  if (loading) {
+  if (!isClient || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="text-center">

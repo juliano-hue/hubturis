@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { signIn } from 'next-auth/react';
 import { rateLimit } from '@/lib/rate-limit';

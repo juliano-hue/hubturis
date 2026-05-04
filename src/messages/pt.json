@@ -307,5 +307,18 @@
       "submit": "Cadastrar Atração",
       "submitting": "Cadastrando..."
     }
+  },
+  "provider": {
+    "attractions": {
+      "title": "Cadastrar Nova Atração",
+      "subtitle": "Preencha os dados da sua experiência turística",
+      "form": {
+        "title": "Título da Atração",
+        "description": "Descrição Completa",
+        "price": "Valor (R$)",
+        "submit": "Cadastrar Atração",
+        "submitting": "Cadastrando..."
+      }
+    }
   }
 }

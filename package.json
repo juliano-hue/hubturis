@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "lint": "next lint"
+  "dev": "next dev --webpack",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "build:clean": "rm -rf .next .turbo node_modules/.prisma && npx prisma generate && npm run build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

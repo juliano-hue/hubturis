@@ -1,6 +1,4 @@
 'use client';
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -31,14 +29,19 @@ interface Booking {
   };
 }
 
-export default function ProviderBookingsPage() {
+export default function BookingsContent() {
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Tudo que usa browser APIs vai AQUI dentro
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
     const userId = localStorage.getItem('userId');
     const role = localStorage.getItem('userRole');
 
@@ -61,7 +64,7 @@ export default function ProviderBookingsPage() {
         setError('Não foi possível carregar as reservas');
         setLoading(false);
       });
-  }, [router]);
+  }, [isClient, router]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -95,7 +98,7 @@ export default function ProviderBookingsPage() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  if (loading) {
+  if (!isClient || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-xl sm:text-2xl">Carregando reservas...</div>

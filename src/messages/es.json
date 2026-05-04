@@ -20,7 +20,8 @@
     "help": "Centro de ayuda",
     "terms": "Términos",
     "privacy": "Privacidad",
-    "copyright": "© 2026 HubTuris. Todos los derechos reservados."
+    "copyright": "© 2026 HubTuris. Todos los derechos reservados.",
+    "backToDashboard": "Volver al Dashboard"
   },
   "home": {
     "hero": {
@@ -265,6 +266,7 @@
     "paymentType": "Tipo de Pago",
     "cardNumber": "Número de Tarjeta",
     "cardExpiry": "Fecha de Vencimiento",
+    "cardCvv": "CVV",
     "cardBrand": "Marca",
     "editButton": "Editar Perfil",
     "saveButton": "Guardar Cambios",
@@ -304,6 +306,19 @@
       "uploadHint": "Imágenes: JPG, PNG, WEBP (hasta 10MB) | Videos: MP4, WEBM (hasta 100MB)",
       "submit": "Crear Atracción",
       "submitting": "Creando..."
+    }
+  },
+  "provider": {
+    "attractions": {
+      "title": "Crear Nueva Atracción",
+      "subtitle": "Complete los datos de su experiencia turística",
+      "form": {
+        "title": "Título de la Atracción",
+        "description": "Descripción Completa",
+        "price": "Precio (R$)",
+        "submit": "Crear Atracción",
+        "submitting": "Creando..."
+      }
     }
   }
 }

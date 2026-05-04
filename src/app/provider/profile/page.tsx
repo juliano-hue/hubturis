@@ -1,5 +1,6 @@
 'use client';
-export const dynamic = 'force-dynamic';
+//export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -22,6 +23,7 @@ const imagensDisponiveis = [
 ];
 
 export default function ProviderProfilePage() {
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -46,13 +48,18 @@ export default function ProviderProfilePage() {
     pixKey: '',
   });
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Mudar imagem de fundo a cada 10 segundos
   useEffect(() => {
+    if (!isClient) return;
     const interval = setInterval(() => {
       setFundoIndex((prev) => (prev + 1) % imagensDisponiveis.length);
     }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isClient]);
 
   const estados = [
     { uf: 'AC', nome: 'Acre' }, { uf: 'AL', nome: 'Alagoas' }, { uf: 'AP', nome: 'Amapá' },
@@ -60,7 +67,7 @@ export default function ProviderProfilePage() {
     { uf: 'DF', nome: 'Distrito Federal' }, { uf: 'ES', nome: 'Espírito Santo' }, { uf: 'GO', nome: 'Goiás' },
     { uf: 'MA', nome: 'Maranhão' }, { uf: 'MT', nome: 'Mato Grosso' }, { uf: 'MS', nome: 'Mato Grosso do Sul' },
     { uf: 'MG', nome: 'Minas Gerais' }, { uf: 'PA', nome: 'Pará' }, { uf: 'PB', nome: 'Paraíba' },
-    { uf: 'PR', nome: 'Paraná' }, { uf: 'PE', nome: 'Pernambuco' }, { uf: 'PI', nome: 'Piauí' },
+    { uf: 'PR', nome: 'Paraná' }, { uf: 'PE', nome: 'Pernambuco' }, { uf: 'P I', nome: 'Piauí' },
     { uf: 'RJ', nome: 'Rio de Janeiro' }, { uf: 'RN', nome: 'Rio Grande do Norte' }, { uf: 'RS', nome: 'Rio Grande do Sul' },
     { uf: 'RO', nome: 'Rondônia' }, { uf: 'RR', nome: 'Roraima' }, { uf: 'SC', nome: 'Santa Catarina' },
     { uf: 'SP', nome: 'São Paulo' }, { uf: 'SE', nome: 'Sergipe' }, { uf: 'TO', nome: 'Tocantins' },
@@ -71,6 +78,7 @@ export default function ProviderProfilePage() {
   const applyCEPMask = (value: string) => value.replace(/\D/g,'').replace(/(\d{5})(\d)/,'$1-$2').slice(0,9);
 
   useEffect(() => {
+    if (!isClient) return;
     const id = localStorage.getItem('userId');
     const role = localStorage.getItem('userRole');
     if (!id || role !== 'PROVIDER') {
@@ -109,7 +117,7 @@ export default function ProviderProfilePage() {
         setIsNewUser(true);
         setLoading(false);
       });
-  }, [router]);
+  }, [isClient, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -120,7 +128,7 @@ export default function ProviderProfilePage() {
     setFormData(prev => ({ ...prev, [name]: maskedValue }));
   };
 
-  const handleSave = async () => {
+    const handleSave = async () => {
     if (!userId) return;
     setSaving(true);
     setError('');
@@ -164,7 +172,7 @@ export default function ProviderProfilePage() {
     }
   };
 
-  if (loading) {
+  if (!isClient || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="text-center">

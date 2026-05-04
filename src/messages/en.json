@@ -20,7 +20,8 @@
     "help": "Help Center",
     "terms": "Terms",
     "privacy": "Privacy",
-    "copyright": "© 2026 HubTuris. All rights reserved."
+    "copyright": "© 2026 HubTuris. All rights reserved.",
+    "backToDashboard": "Back to Dashboard"
   },
   "home": {
     "hero": {
@@ -265,13 +266,14 @@
     "paymentType": "Payment Type",
     "cardNumber": "Card Number",
     "cardExpiry": "Expiry Date",
+    "cardCvv": "CVV",
     "cardBrand": "Card Brand",
     "editButton": "Edit Profile",
     "saveButton": "Save Changes",
     "cancelButton": "Cancel",
     "successMessage": "Profile updated successfully!",
-    "backToDashboard": "Back to Dashboard",
     "errorMessage": "Error saving profile",
+    "backToDashboard": "Back to Dashboard",
     "creditCard": "Card Number",
     "saving": "Saving..."
   },
@@ -304,6 +306,19 @@
       "uploadHint": "Images: JPG, PNG, WEBP (up to 10MB) | Videos: MP4, WEBM (up to 100MB)",
       "submit": "Create Attraction",
       "submitting": "Creating..."
+    }
+  },
+  "provider": {
+    "attractions": {
+      "title": "Create New Attraction",
+      "subtitle": "Fill in the details of your touristic experience",
+      "form": {
+        "title": "Attraction Title",
+        "description": "Full Description",
+        "price": "Price (R$)",
+        "submit": "Create Attraction",
+        "submitting": "Creating..."
+      }
     }
   }
 }
