@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 type UserRole = 'CONSUMER' | 'PROVIDER';
 
@@ -27,6 +27,7 @@ const imagensDisponiveis = [
 
 export default function RegisterPage() {
   const router = useRouter();
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const t = useTranslations('register');
   const common = useTranslations('common');
@@ -101,7 +102,7 @@ export default function RegisterPage() {
         if (data.user.role === 'PROVIDER') {
           router.push('/provider/profile');
         } else {
-          router.push('/consumer/profile');
+          router.push(`/${locale}/consumer/profile`);
         }
       }, 1500);
 
@@ -238,7 +239,7 @@ export default function RegisterPage() {
         <div className="text-center mt-6">
           <p className="text-gray-600 text-sm">
             {t('haveAccount')}{' '}
-            <Link href="/login" className="text-blue-600 font-medium hover:underline">
+            <Link href={`/${locale}/login`} className="text-blue-600 font-medium hover:underline">
               {common('signIn')}
             </Link>
           </p>

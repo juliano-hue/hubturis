@@ -187,6 +187,7 @@
     "cancelConfirm": "¿Estás seguro de que deseas cancelar esta reserva? Se procesará el reembolso.",
     "cancelError": "Error al cancelar la reserva",
     "cancelSuccess": "✅ ¡Reserva cancelada con éxito! Se procesará el reembolso.",
+    "navProfile": "Perfil",
     "logoutConfirm": "¿Realmente deseas salir del sistema?",
     "status": {
       "pending": "Esperando pago",

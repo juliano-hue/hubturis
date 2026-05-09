@@ -1,18 +1,13 @@
 'use client';
-import { NextIntlClientProvider } from 'next-intl';
-import { useLocale } from 'next-intl';
-import Navbar from '@/components/Navbar';
+export const dynamic = 'force-dynamic';
 
-export default function ProviderLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const locale = useLocale();
+import ClientNavbarWrapper from '@/components/ClientNavbarWrapper';
+
+export default function ProviderLayout({ children }: { children: React.ReactNode }) {
   return (
-    <NextIntlClientProvider locale={locale}>
-      <Navbar />
+    <>
+      <ClientNavbarWrapper />
       <main className="pt-20">{children}</main>
-    </NextIntlClientProvider>
+    </>
   );
 }

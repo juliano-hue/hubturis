@@ -187,6 +187,7 @@
     "cancelConfirm": "Are you sure you want to cancel this booking? The refund will be processed.",
     "cancelError": "Error cancelling booking",
     "cancelSuccess": "✅ Booking cancelled successfully! Refund will be processed.",
+    "navProfile": "Profile",
     "logoutConfirm": "Do you really want to logout?",
     "status": {
       "pending": "Awaiting payment",

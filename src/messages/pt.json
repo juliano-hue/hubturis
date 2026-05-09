@@ -25,8 +25,8 @@
   },
   "home": {
     "hero": {
-      "title": "Descubra o Brasil",
-      "subtitle": "As melhores experiências e passeios turísticos em um só lugar",
+      "title": "Descubra nossa Região",
+      "subtitle": "Descubra nossa região.",
       "searchPlaceholder": "Para onde você quer ir?",
       "searchButton": "Buscar"
     },
@@ -55,6 +55,7 @@
       "cultural": "Cultural",
       "ecotourism": "Ecoturismo",
       "beach": "Praia",
+      "gastronomy": "Gastronomia",
       "cityTour": "City Tour"
     },
     "cities": {
@@ -187,6 +188,7 @@
     "cancelConfirm": "Tem certeza que deseja cancelar esta reserva? O reembolso será processado.",
     "cancelError": "Erro ao cancelar reserva",
     "cancelSuccess": "✅ Reserva cancelada com sucesso! O reembolso será processado.",
+    "navProfile": "Perfil",
     "logoutConfirm": "Deseja realmente sair do sistema?",
     "status": {
       "pending": "Aguardando pagamento",

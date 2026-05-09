@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import StarRating from '@/components/StarRating';
@@ -62,6 +62,7 @@ interface Attraction {
 export default function AttractionDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations('attraction');
   const common = useTranslations('common');
   
@@ -206,7 +207,7 @@ export default function AttractionDetailPage() {
 
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      router.push('/register?message=CADASTRE-SE OU FAÇA O SEU LOGIN');
+      router.push(`/${locale}/register?message=CADASTRE-SE OU FAÇA O SEU LOGIN`);
       return;
     }
 
@@ -239,7 +240,7 @@ export default function AttractionDetailPage() {
       }
 
       alert(t('addToCartSuccess'));
-      router.push('/consumer/cart');
+      router.push(`/${locale}/consumer/cart`);
     } catch (error: any) {
       console.error('Erro:', error);
       setError(error.message);
@@ -256,7 +257,7 @@ export default function AttractionDetailPage() {
 
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      router.push('/login');
+      router.push(`/${locale}/login`);
       return;
     }
 

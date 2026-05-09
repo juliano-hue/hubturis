@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import StarDisplay from '@/components/StarDisplay';
 
@@ -25,34 +25,30 @@ interface Attraction {
 
 // Lista de imagens disponíveis
 const imagens = [
-  '/Frank/IMG_3433.JPG',
-  '/Frank/IMG_3434.JPG',
-  '/Frank/IMG_3435.JPG',
-  '/Frank/IMG_3436.JPG',
-  '/Frank/IMG_3437.JPG',
-  '/Frank/IMG_3438.JPG',
-  '/Frank/IMG_3439.JPG',
-  '/Frank/IMG_3440.JPG',
-  '/Frank/IMG_3441.JPG',
-  '/Frank/IMG_3442.JPG',
-  '/Frank/IMG_3443.JPG',
-  '/Frank/IMG_3444.JPG',
-  '/Frank/IMG_3445.JPG',
-  '/Frank/IMG_3446.JPG',
-  '/Frank/IMG_3447.JPG',
-  '/Frank/IMG_3448.JPG',
-  '/Frank/IMG_3449.JPG',
-  '/Frank/IMG_3450.JPG',
-  '/Frank/IMG_3451.JPG',
-  '/Frank/IMG_3452.JPG',
-  '/Frank/IMG_3453.JPG',
-  '/Frank/IMG_3454.JPG',
-  '/Frank/IMG_3455.JPG',
-  '/Frank/IMG_3456.JPG',
-  '/Frank/IMG_5404.JPEG',
-  '/Frank/IMG_5405.JPEG',
-  '/Frank/IMG_8094.JPEG',
-  '/Frank/IMG_8095.JPEG',
+  '/Frank/inicial/2017-09-10 16-59 IMG_0158.jpg',
+  '/Frank/inicial/2017-09-10 16-59 P_20170910_165942.jpg',
+  '/Frank/inicial/2017-09-16 16-30 IMG_1030.jpg',
+  '/Frank/inicial/2017-09-18 09-40 IMG_1047.jpg',
+  '/Frank/inicial/Flow,_gere_para_202sss604211745.jpg',
+  '/Frank/inicial/Flow,_gere_para_sss202fgdsssddszcs604211745.jpg',
+  '/Frank/inicial/Flow,_gere_para_sss202fgdssss604211745.jpg',
+  '/Frank/inicial/Flow,_gere_para_sss202sss604211745.jpg',
+  '/Frank/inicial/Fotos_asdatraaasções_turisSDFASmoasdaDF_202604211744.jpg',
+  '/Frank/inicial/Fotos_asdatraaasções_turismo_202604211744.jpg',
+  '/Frank/inicial/Fotos_asdatraaasções_turismoasdaDF_202604211744.jpg',
+  '/Frank/inicial/Fotos_asdatrações_turismo_202604211744.jpg',
+  '/Frank/inicial/Fotos_atrações_turismo_202604211744 (1).jpeg',
+  '/Frank/inicial/Fotos_atrações_turismo_202604211745.jpeg',
+  '/Frank/inicial/Gere_imagens_turísticas_202604211742.jpeg',
+  '/Frank/inicial/Gere_imagens_turísticas_202604211743 (1).jpeg',
+  '/Frank/inicial/Gere_imagens_turísticas_202604211743.jpeg',
+  '/Frank/inicial/IMG_0204.JPG',
+  '/Frank/inicial/IMG_0210.JPG',
+  '/Frank/inicial/IMG_0215.JPG',
+  '/Frank/inicial/IMG_3443.JPG',
+  '/Frank/inicial/IMG_5405.JPEG',
+  '/Frank/inicial/Mitsubishi_Pajero_dune_202604211712.jpeg',
+  '/Frank/inicial/b640676d-2da7-423c-98c7-846aebfae2e9.jpg',
 ];
 
 // Lista de vídeos
@@ -65,10 +61,11 @@ const videos = [
 
 export default function HomePage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = pathname.split('/')[1] || 'pt';
   const t = useTranslations('home');
   const common = useTranslations('common');
   
-  const [searchTerm, setSearchTerm] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState('');
@@ -128,21 +125,13 @@ export default function HomePage() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      router.push(`/attractions?search=${encodeURIComponent(searchTerm)}`);
-    } else {
-      router.push('/attractions');
-    }
-  };
 
   const handleAttractionClick = (attractionId: string) => {
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      router.push('/register?message=CADASTRE-SE OU FAÇA O SEU LOGIN');
+      router.push(`/${locale}/register?message=CADASTRE-SE OU FAÇA O SEU LOGIN`);
     } else {
-      router.push(`/attractions/${attractionId}`);
+      router.push(`/${locale}/attractions/${attractionId}`);
     }
   };
 
@@ -193,23 +182,18 @@ export default function HomePage() {
           <p className="text-base sm:text-xl md:text-2xl mb-6 sm:mb-8 text-gray-100">
             {t('hero.subtitle')}
           </p>
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto px-2 sm:px-0">
-            <div className="flex flex-col sm:flex-row gap-3 bg-white rounded-2xl p-2 shadow-xl">
-              <input
-                type="text"
-                placeholder={t('hero.searchPlaceholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-gray-800 placeholder-gray-400 focus:outline-none rounded-xl text-base"
-              />
+          <div className="flex flex-wrap justify-center gap-3 mt-2 sm:mt-4 max-w-3xl mx-auto px-2">
+            {categorias.map((cat, i) => (
               <button
-                type="submit"
-                className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all text-sm sm:text-base min-h-[44px]"
+                key={i}
+                onClick={() => router.push(`/${locale}/attractions?category=${cat.nome}`)}
+                className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/15 backdrop-blur-sm border border-white/30 text-white rounded-full hover:bg-white hover:text-blue-600 transition-all duration-300 font-medium text-sm sm:text-base shadow-lg"
               >
-                🔍 {t('hero.searchButton')}
+                <span className="text-lg sm:text-xl">{cat.icone}</span>
+                <span>{cat.nome}</span>
               </button>
-            </div>
-          </form>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -287,7 +271,7 @@ export default function HomePage() {
           
           <div className="text-center mt-8 sm:mt-12">
             <Link 
-              href={`/attractions`} 
+              href={`/${locale}/attractions`}
               className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition transform hover:scale-105 text-sm sm:text-base min-h-[44px]"
             >
               {common('seeAll')} →
@@ -296,32 +280,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CATEGORIAS */}
-      <section id="categorias" className="py-12 sm:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
-              {common('categories')}
-            </h2>
-            <p className="text-base sm:text-xl text-gray-600">{t('categoriesSub')}</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {categorias.map((categoria, index) => (
-              <div
-                key={index}
-                onClick={() => router.push(`/attractions?category=${categoria.nome}`)}
-                className="group p-4 sm:p-6 border border-gray-100 rounded-2xl hover:shadow-lg transition-all cursor-pointer bg-white"
-              >
-                <div className={`w-12 h-12 sm:w-16 sm:h-16 ${categoria.cor} rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-3 sm:mb-4 group-hover:scale-110 transition`}>
-                  {categoria.icone}
-                </div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">{categoria.nome}</h3>
-                <p className="text-gray-500 text-xs sm:text-sm">{categoria.descricao}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* VÍDEO DESTAQUE */}
       <section className="py-12 sm:py-20 bg-gradient-to-br from-blue-900 to-purple-900">
@@ -382,7 +340,7 @@ export default function HomePage() {
           </p>
           {!isLoggedIn && (
             <Link 
-              href="/register" 
+              href={`/${locale}/register`}
               className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-white text-blue-600 font-semibold rounded-2xl hover:shadow-lg transition text-base sm:text-lg min-h-[44px]"
             >
               {common('signUp')}

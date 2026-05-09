@@ -1,11 +1,10 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-
-export const dynamic = 'force-dynamic';
 
 interface Booking {
   id: string;
@@ -24,7 +23,6 @@ interface Booking {
   };
 }
 
-// Imagens disponíveis na pasta atracoes-natal
 const imagensDisponiveis = [
   '/atracoes-natal/Flow,_gere_para_202sss604211745.jpg',
   '/atracoes-natal/Flow,_gere_para_sss202fgdsssddszcs604211745.jpg',
@@ -44,11 +42,9 @@ const imagensDisponiveis = [
 
 export default function ConsumerDashboard() {
   const router = useRouter();
-  const params = useParams();
-  const locale = params?.locale as string || 'pt';
   const t = useTranslations('consumer');
-  const common = useTranslations('common');
-  
+  const tCommon = useTranslations('common');
+
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
@@ -58,16 +54,13 @@ export default function ConsumerDashboard() {
   const loadBookings = useCallback(async () => {
     const userId = localStorage.getItem('userId');
     if (!userId) return;
-    
     try {
       const res = await fetch(`/api/bookings?userId=${userId}`, {
         headers: { 'x-user-id': userId }
       });
       const data = await res.json();
-      const novasReservas = Array.isArray(data) ? data : [];
-      setBookings(novasReservas);
-    } catch (error) {
-      console.error('Erro ao carregar reservas:', error);
+      setBookings(Array.isArray(data) ? data : []);
+    } catch {
       setBookings([]);
     }
   }, []);
@@ -85,7 +78,7 @@ export default function ConsumerDashboard() {
     const name = localStorage.getItem('userName');
 
     if (!userId || role !== 'CONSUMER') {
-      router.push(`/${locale}/login`);
+      router.push('/login');
       return;
     }
 
@@ -93,49 +86,35 @@ export default function ConsumerDashboard() {
 
     fetch(`/api/consumer/profile?userId=${userId}`)
       .then(res => res.json())
-      .then(data => {
-        if (data.profile?.fullName) setUserName(data.profile.fullName);
-      })
+      .then(data => { if (data.profile?.fullName) setUserName(data.profile.fullName); })
       .catch(console.error);
 
     loadBookings().finally(() => setLoading(false));
-  }, [router, locale, loadBookings, refreshKey]);
+  }, [router, loadBookings, refreshKey]);
 
   const handleCancelBooking = async (bookingId: string, bookingDate: string) => {
     const now = new Date();
     const eventDate = new Date(bookingDate);
     const hoursDiff = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-    
+
     if (hoursDiff < 24) {
       alert(t('cancelNotAllowed'));
       return;
     }
-    
-    if (!confirm(t('cancelConfirm'))) {
-      return;
-    }
-    
+    if (!confirm(t('cancelConfirm'))) return;
+
     const userId = localStorage.getItem('userId');
-    
     try {
       const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
         method: 'POST',
         headers: { 'x-user-id': userId || '' },
       });
-      
       const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || t('cancelError'));
-      }
-      
+      if (!response.ok) throw new Error(data.error || t('cancelError'));
       alert(t('cancelSuccess'));
-      
       await loadBookings();
       setRefreshKey(prev => prev + 1);
-      
     } catch (err: any) {
-      console.error('Erro:', err);
       alert(err.message);
     }
   };
@@ -151,17 +130,6 @@ export default function ConsumerDashboard() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  const getStatusText = (status: string) => {
-    const texts: Record<string, string> = {
-      PENDING: t('status.pending'),
-      CONFIRMED: t('status.confirmed'),
-      CANCELLED: t('status.cancelled'),
-      COMPLETED: t('status.completed'),
-      REJECTED: t('status.rejected'),
-    };
-    return texts[status] || status;
-  };
-
   const getPaymentStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       PENDING: 'bg-orange-100 text-orange-800',
@@ -172,23 +140,45 @@ export default function ConsumerDashboard() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const getStatusText = (status: string) => {
+    const map: Record<string, string> = {
+      PENDING: t('status.pending'),
+      CONFIRMED: t('status.confirmed'),
+      CANCELLED: t('status.cancelled'),
+      COMPLETED: t('status.completed'),
+      REJECTED: t('status.rejected'),
+    };
+    return map[status] || status;
+  };
+
   const getPaymentStatusText = (status: string) => {
-    const texts: Record<string, string> = {
+    const map: Record<string, string> = {
       PENDING: t('payment.pending'),
       PAID: t('payment.paid'),
       REFUNDED: t('payment.refunded'),
       FAILED: t('payment.failed'),
     };
-    return texts[status] || status;
+    return map[status] || status;
+  };
+
+  const handleLogout = () => {
+    if (confirm(t('logoutConfirm'))) {
+      localStorage.clear();
+      document.cookie.split(';').forEach(cookie => {
+        const [name] = cookie.split('=');
+        if (name.trim()) {
+          document.cookie = `${name.trim()}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+        }
+      });
+      router.push('/');
+    }
   };
 
   const totalGasto = bookings.reduce((sum, b) => {
-    if (b.status === 'CONFIRMED' && b.paymentStatus === 'PAID') {
-      return sum + b.totalPrice;
-    }
+    if (b.status === 'CONFIRMED' && b.paymentStatus === 'PAID') return sum + b.totalPrice;
     return sum;
   }, 0);
-  
+
   const reservasConfirmadas = bookings.filter(b => b.status === 'CONFIRMED' && b.paymentStatus === 'PAID').length;
   const totalReservas = bookings.length;
 
@@ -199,7 +189,7 @@ export default function ConsumerDashboard() {
           <div className="text-6xl sm:text-7xl mb-4 sm:mb-6 animate-bounce">🏖️</div>
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-base sm:text-xl text-gray-600 font-medium">{common('loading')}</p>
+            <p className="text-base sm:text-xl text-gray-600 font-medium">{tCommon('loading')}</p>
           </div>
         </div>
       </div>
@@ -208,8 +198,7 @@ export default function ConsumerDashboard() {
 
   return (
     <div className="min-h-screen">
-      {/* HERO SECTION */}
-      <div 
+      <div
         className="relative h-[40vh] sm:h-[50vh] min-h-[300px] sm:min-h-[400px] flex flex-col items-center justify-center text-white bg-cover bg-center transition-all duration-1000"
         style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${imagensDisponiveis[fundoIndex]}')` }}
       >
@@ -218,19 +207,15 @@ export default function ConsumerDashboard() {
             <span className="text-yellow-400 text-sm">⭐</span>
             <span className="text-xs sm:text-sm font-medium">{t('welcomeBack')}</span>
           </div>
-          
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4">
-            {t('greeting', { name: userName || t('traveler') })} 👋
+            {t('greeting', { name: userName || t('traveler') })}
           </h1>
           <p className="text-base sm:text-xl text-gray-200 mb-6 sm:mb-8">
-            {totalReservas === 0 
-              ? t('noBookingsYet')
-              : t('experiencesCount', { count: totalReservas })}
+            {totalReservas === 0 ? t('noBookingsYet') : t('experiencesCount', { count: totalReservas })}
           </p>
-          
           <div className="flex justify-center">
             <Link
-              href={`/${locale}/attractions`}
+              href="/attractions"
               className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-10 py-3 sm:py-5 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-base sm:text-xl font-bold rounded-full transition-all duration-300 shadow-2xl hover:shadow-xl transform hover:scale-105 min-h-[48px]"
             >
               🌟 {t('exploreNew')} 🌟
@@ -239,33 +224,23 @@ export default function ConsumerDashboard() {
         </div>
       </div>
 
-      {/* NAVEGAÇÃO RÁPIDA - BOTÕES MAIORES E SEM O BOTÃO SAIR */}
-      <div className="relative py-4 sm:py-5 bg-white/80 backdrop-blur-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-            <Link
-              href={`/${locale}/attractions`}
-              className="px-5 sm:px-7 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold transition shadow-md hover:shadow-lg flex items-center gap-2 text-base min-h-[48px]"
-            >
-              🏖️ {common('explore')}
-            </Link>
-            <Link
-              href={`/${locale}/consumer/favorites`}
-              className="px-5 sm:px-7 py-3 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white rounded-xl font-semibold transition shadow-md hover:shadow-lg flex items-center gap-2 text-base min-h-[48px]"
-            >
-              ❤️ {t('favorites')}
-            </Link>
-            <Link
-              href={`/${locale}/consumer/profile`}
-              className="px-5 sm:px-7 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-semibold transition shadow-md hover:shadow-lg flex items-center gap-2 text-base min-h-[48px]"
-            >
-              👤 Perfil
-            </Link>
-          </div>
+      <div className="relative py-3 sm:py-4 bg-white/80 backdrop-blur-sm border-b overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-center gap-2 sm:gap-4 flex-wrap">
+          <Link href="/attractions" className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full font-medium transition shadow-md hover:shadow-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-base min-h-[40px]">
+            🏖️ {tCommon('explore')}
+          </Link>
+          <Link href="/consumer/favorites" className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white rounded-full font-medium transition shadow-md hover:shadow-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-base min-h-[40px]">
+            ❤️ {t('favorites')}
+          </Link>
+          <Link href="/consumer/profile" className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-full font-medium transition shadow-md hover:shadow-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-base min-h-[40px]">
+            👤 {t('navProfile')}
+          </Link>
+          <button onClick={handleLogout} className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full font-medium transition shadow-md hover:shadow-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-base min-h-[40px]">
+            🚪 {tCommon('logout')}
+          </button>
         </div>
       </div>
 
-      {/* STATS CARDS */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg transform hover:-translate-y-1 transition duration-300">
@@ -287,7 +262,6 @@ export default function ConsumerDashboard() {
           </div>
         </div>
 
-        {/* MINHAS CONTRATAÇÕES */}
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-4 sm:px-6 py-4 sm:py-5">
             <h3 className="text-xl sm:text-2xl font-semibold text-white">{t('myBookings')}</h3>
@@ -298,11 +272,9 @@ export default function ConsumerDashboard() {
             <div className="p-8 sm:p-16 text-center">
               <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">🎯</div>
               <h4 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-3">{t('emptyBookings')}</h4>
-              <p className="text-gray-500 text-sm sm:text-base mb-6 sm:mb-8 max-w-md mx-auto">
-                {t('emptyBookingsMessage')}
-              </p>
+              <p className="text-gray-500 text-sm sm:text-base mb-6 sm:mb-8 max-w-md mx-auto">{t('emptyBookingsMessage')}</p>
               <Link
-                href={`/${locale}/attractions`}
+                href="/attractions"
                 className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base min-h-[44px]"
               >
                 🌟 {t('exploreNow')}
@@ -316,9 +288,7 @@ export default function ConsumerDashboard() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 sm:gap-3 mb-2">
                         <span className="text-2xl sm:text-3xl">🏝️</span>
-                        <h4 className="text-base sm:text-xl font-semibold text-gray-800 break-words">
-                          {booking.attraction.title}
-                        </h4>
+                        <h4 className="text-base sm:text-xl font-semibold text-gray-800 break-words">{booking.attraction.title}</h4>
                       </div>
                       <p className="text-gray-500 text-xs sm:text-sm flex items-center gap-1">
                         <span>📍</span> {booking.attraction.city}, {booking.attraction.state}
@@ -330,7 +300,7 @@ export default function ConsumerDashboard() {
                         </div>
                         <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full text-xs sm:text-sm">
                           <span>👥</span>
-                          {t('participants')}
+                          <span>{booking.participants} {t('participants')}</span>
                         </div>
                         <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold text-xs sm:text-sm">
                           <span>💰</span>
@@ -338,7 +308,6 @@ export default function ConsumerDashboard() {
                         </div>
                       </div>
                     </div>
-
                     <div className="flex flex-col items-start md:items-end gap-2">
                       <div className="flex flex-wrap gap-2">
                         <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(booking.status)}`}>
@@ -365,10 +334,9 @@ export default function ConsumerDashboard() {
         </div>
       </div>
 
-      {/* FOOTER */}
       <footer className="bg-gray-900 text-gray-400 py-4 sm:py-6 mt-8 sm:mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <p className="text-xs sm:text-sm">{common('copyright')}</p>
+          <p className="text-xs sm:text-sm">{tCommon('copyright')}</p>
         </div>
       </footer>
     </div>

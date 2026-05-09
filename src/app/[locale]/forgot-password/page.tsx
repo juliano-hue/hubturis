@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 // 🔽 ADICIONE ESTA LINHA SE NÃO TIVER 🔽
 export const dynamic = 'force-dynamic';
 
 export default function ForgotPasswordPage() {
+  const locale = useLocale();
   const t = useTranslations('forgotPassword');
   const common = useTranslations('common');
   
@@ -79,7 +80,7 @@ export default function ForgotPasswordPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <Link href="/login" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+          <Link href={`/${locale}/login`} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
             ← {t('backToLogin')}
           </Link>
         </div>

@@ -2,15 +2,15 @@
 import dynamic from 'next/dynamic';
 import ClientOnly from '@/components/ClientOnly';
 
-const ProfileContent = dynamic(
-  () => import('@/components/provider/ProfileContent'),
+const BookingsContent = dynamic(
+  () => import('@/components/provider/BookingsContent'),
   { ssr: false, loading: () => <div className="min-h-screen flex items-center justify-center">Carregando...</div> }
 );
 
-export default function ProviderProfilePage() {
+export default function ProviderBookingsPage() {
   return (
     <ClientOnly>
-      <ProfileContent />
+      <BookingsContent />
     </ClientOnly>
   );
 }

@@ -1,59 +1,57 @@
 ﻿'use client';
 
-import { useSession, signOut } from 'next-auth/react';
-import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
-import { routing } from '@/i18n/routing';
-
-// Fallback seguro para build (evita erro de pré-renderização)
-let safeT: (key: string) => string;
-try {
-  const { useTranslations: ut } = require('next-intl');
-  safeT = ut('common');
-} catch (e) {
-  safeT = (key: string) => key;
-}
+import Link from 'next/link';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
+  const t = useTranslations('common');
+  const locale = pathname?.split('/')[1] && ['pt','en','es'].includes(pathname.split('/')[1])
+    ? pathname.split('/')[1]
+    : 'pt';
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoExists, setLogoExists] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  let t;
-  try {
-    t = useTranslations('common');
-  } catch (e) {
-    t = safeT;
-  }
+  const [localAuth, setLocalAuth] = useState<{id:string,role:string,name:string} | null>(null);
 
-  const isLoggedIn = status === 'authenticated';
-  const user = session?.user as any;
-  const userRole = user?.role;
+  useEffect(() => {
+    const id = localStorage.getItem('userId');
+    const role = localStorage.getItem('userRole');
+    const name = localStorage.getItem('userName') || '';
+    if (id) setLocalAuth({ id, role: role || '', name });
+  }, []);
+
+  const isLoggedIn = status === 'authenticated' || !!localAuth;
+  const sessionUser = session?.user as any;
+  const user = sessionUser || localAuth;
+  const userRole = sessionUser?.role || localAuth?.role || '';
   const isConsumer = userRole === 'CONSUMER';
   const isProvider = userRole === 'PROVIDER';
-  const userId = user?.id;
-  
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
-  
+  const userId = sessionUser?.id || localAuth?.id;
+
   const switchLanguage = (newLocale: string) => {
-    let currentPath = pathname;
-    const localePattern = new RegExp(`^/(${routing.locales.join('|')})`);
-    const pathWithoutLocale = currentPath.replace(localePattern, '');
-    const newPath = pathWithoutLocale || '';
-    const newUrl = `/${newLocale}${newPath}`;
-    router.push(newUrl);
+    if (pathname) {
+      const segments = pathname.split('/');
+      if (['pt','en','es'].includes(segments[1])) {
+        segments[1] = newLocale;
+        router.push(segments.join('/'));
+      }
+    }
   };
-  
+
   useEffect(() => {
     fetch('/logo.gif')
       .then(res => res.ok && setLogoExists(true))
       .catch(() => setLogoExists(false));
   }, []);
-  
+
   useEffect(() => {
     if (isLoggedIn && isConsumer && userId) {
       fetch(`/api/cart?userId=${userId}`)
@@ -66,7 +64,7 @@ export default function Navbar() {
       setCartCount(0);
     }
   }, [isLoggedIn, isConsumer, userId]);
-  
+
   const handleLogout = async () => {
     if (confirm(t('logoutConfirm') || 'Deseja realmente sair do sistema?')) {
       localStorage.clear();
@@ -82,7 +80,7 @@ export default function Navbar() {
       window.location.href = '/';
     }
   };
-  
+
   const getDashboardLink = () => {
     if (userRole === 'PROVIDER') return '/provider/my-attractions';
     if (userRole === 'ADMIN') return '/admin';
@@ -90,7 +88,7 @@ export default function Navbar() {
   };
 
   const [isSiteAuthenticated, setIsSiteAuthenticated] = useState(false);
-  
+
   useEffect(() => {
     fetch('/api/site-auth')
       .then(res => res.json())
@@ -103,7 +101,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Link href={isProvider ? '/provider/my-attractions' : `/${locale}`} className="flex items-center">
+            <Link href={isProvider ? '/provider/my-attractions' : '/'} className="flex items-center">
               {logoExists ? (
                 <img src="/logo.gif" alt="HubTuris" className="h-10 md:h-12 w-auto object-contain" />
               ) : (
@@ -112,7 +110,7 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            
+
             {isSiteAuthenticated && (
               <button
                 onClick={async () => {
@@ -146,7 +144,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href={isProvider ? '/provider/my-attractions' : `/${locale}/attractions`} className="text-gray-700 hover:text-blue-600 transition">
+                <Link href="/attractions" className="text-gray-700 hover:text-blue-600 transition">
                   {t('explore')}
                 </Link>
                 <a href="#destinos" className="text-gray-700 hover:text-blue-600 transition">
@@ -166,7 +164,7 @@ export default function Navbar() {
             {isLoggedIn ? (
               <>
                 {isConsumer && (
-                  <Link href={`/${locale}/consumer/cart`} className="relative">
+                  <Link href="/consumer/cart" className="relative">
                     <span className="text-xl">🛒</span>
                     {cartCount > 0 && (
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -184,15 +182,15 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href={`/${locale}/login`} className="text-gray-700 hover:text-blue-600 transition">
+                <Link href="/login" className="text-gray-700 hover:text-blue-600 transition">
                   {t('signIn')}
                 </Link>
-                <Link href={`/${locale}/register`} className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition">
+                <Link href="/register" className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition">
                   {t('signUp')}
                 </Link>
               </>
             )}
-            
+
             {!isProvider && (
               <div className="flex items-center gap-1 ml-2 border-l pl-3 border-gray-200">
                 <button onClick={() => switchLanguage('pt')} className={`px-2 py-1 rounded text-xs font-medium uppercase transition ${locale === 'pt' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -201,7 +199,7 @@ export default function Navbar() {
                 <button onClick={() => switchLanguage('en')} className={`px-2 py-1 rounded text-xs font-medium uppercase transition ${locale === 'en' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
                   EN
                 </button>
-                <button onClick={() => switchLanguage('es')} className={`px-2 py-1 rounded text-xs font-medium uppercase transition ${locale === 'es' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                <button onClick={() => switchLanguage('es')} className={`px-2 py-1 rounded text-xs font-medium uppercase transition ${locale === 'es' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:hover:bg-gray-100'}`}>
                   ES
                 </button>
               </div>
@@ -239,7 +237,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href={isProvider ? '/provider/my-attractions' : `/${locale}/attractions`} className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                <Link href="/attractions" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
                   {t('explore')}
                 </Link>
                 <a href="#destinos" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
@@ -253,11 +251,11 @@ export default function Navbar() {
                 </a>
               </>
             )}
-            
+
             {isLoggedIn ? (
               <>
                 {isConsumer && (
-                  <Link href={`/${locale}/consumer/cart`} className="flex items-center gap-2 text-gray-700 py-2" onClick={() => setMenuOpen(false)}>
+                  <Link href="/consumer/cart" className="flex items-center gap-2 text-gray-700 py-2" onClick={() => setMenuOpen(false)}>
                     🛒 {t('cart')}
                     {cartCount > 0 && (
                       <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-1">
@@ -275,15 +273,15 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href={`/${locale}/login`} className="block text-gray-700 py-2" onClick={() => setMenuOpen(false)}>
+                <Link href="/login" className="block text-gray-700 py-2" onClick={() => setMenuOpen(false)}>
                   {t('signIn')}
                 </Link>
-                <Link href={`/${locale}/register`} className="block text-blue-600 font-semibold py-2" onClick={() => setMenuOpen(false)}>
+                <Link href="/register" className="block text-blue-600 font-semibold py-2" onClick={() => setMenuOpen(false)}>
                   {t('signUp')}
                 </Link>
               </>
             )}
-            
+
             {isSiteAuthenticated && (
               <button
                 onClick={async () => {
@@ -295,7 +293,7 @@ export default function Navbar() {
                 🚪 Sair do Site
               </button>
             )}
-            
+
             {!isProvider && (
               <div className="flex items-center justify-center gap-3 pt-2 border-t mt-2">
                 <button onClick={() => { switchLanguage('pt'); setMenuOpen(false); }} className="px-3 py-1 rounded text-sm font-medium uppercase bg-gray-100 text-gray-700">

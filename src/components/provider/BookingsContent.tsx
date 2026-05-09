@@ -30,18 +30,14 @@ interface Booking {
 }
 
 export default function BookingsContent() {
-  const [isClient, setIsClient] = useState(false);
-  const router = useRouter();
+  // Removido o estado 'isClient' e seu useEffect, pois o componente já é carregado no cliente via dynamic import com ssr: false
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
+    // Não precisamos mais verificar 'isClient' aqui, pois este useEffect só rodará no cliente
     const userId = localStorage.getItem('userId');
     const role = localStorage.getItem('userRole');
 
@@ -60,11 +56,11 @@ export default function BookingsContent() {
         setLoading(false);
       })
       .catch(err => {
-        console.error('Erro:', err);
+        console.        error('Erro ao buscar reservas:', err); // Mensagem de erro mais específica
         setError('Não foi possível carregar as reservas');
         setLoading(false);
       });
-  }, [isClient, router]);
+  }, [router]); // 'router' é a única dependência necessária aqui
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -98,10 +94,19 @@ export default function BookingsContent() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  if (!isClient || loading) {
+  // Simplificado para verificar apenas 'loading', já que 'isClient' é garantido
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-xl sm:text-2xl">Carregando reservas...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600">
+        <p>{error}</p>
       </div>
     );
   }
@@ -113,7 +118,7 @@ export default function BookingsContent() {
           <div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Reservas das Minhas Atrações</h1>
             <p className="text-gray-600 text-sm sm:text-base mt-1 sm:mt-2">
-              {bookings.length === 0 
+              {bookings.length === 0
                 ? 'Nenhuma reserva ainda'
                 : `${bookings.length} reserva${bookings.length > 1 ? 's' : ''} realizada${bookings.length > 1 ? 's' : ''}`
               }
@@ -146,7 +151,7 @@ export default function BookingsContent() {
                     <p className="text-gray-500 text-xs sm:text-sm mb-2 sm:mb-3">
                       📍 {booking.attraction.city}, {booking.attraction.state}
                     </p>
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
                       <div className="bg-gray-50 p-2 sm:p-3 rounded-lg sm:rounded-xl">
                         <p className="text-xs text-gray-500">Cliente</p>

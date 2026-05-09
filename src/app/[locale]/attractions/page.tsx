@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import StarDisplay from '@/components/StarDisplay';
 // 🔽 COLE ESTA LINHA AQUI 🔽
@@ -28,22 +28,14 @@ interface Attraction {
   };
 }
 
-// Imagens disponíveis na pasta atracoes-natal
+// Imagens de fallback (existem no servidor)
 const imagensDisponiveis = [
-  '/atracoes-natal/Flow,_gere_para_202sss604211745.jpg',
-  '/atracoes-natal/Flow,_gere_para_sss202fgdsssddszcs604211745.jpg',
-  '/atracoes-natal/Flow,_gere_para_sss202fgdssss604211745.jpg',
-  '/atracoes-natal/Flow,_gere_para_sss202sss604211745.jpg',
-  '/atracoes-natal/Fotos_asdatraaasções_turismoasdaDF_202604211744.jpg',
-  '/atracoes-natal/Fotos_asdatraaasções_turismo_202604211744.jpg',
-  '/atracoes-natal/Fotos_asdatraaasções_turisSDFASmoasdaDF_202604211744.jpg',
-  '/atracoes-natal/Fotos_asdatrações_turismo_202604211744.jpg',
-  '/atracoes-natal/Fotos_atrações_turismo_202604211744 (1).jpeg',
-  '/atracoes-natal/Fotos_atrações_turismo_202604211745.jpeg',
-  '/atracoes-natal/Gere_imagens_turísticas_202604211742.jpeg',
-  '/atracoes-natal/Gere_imagens_turísticas_202604211743 (1).jpeg',
-  '/atracoes-natal/Gere_imagens_turísticas_202604211743.jpeg',
-  '/atracoes-natal/Mitsubishi_Pajero_dune_202604211712.jpeg',
+  '/Frank/inicial/IMG_0204.JPG',
+  '/Frank/inicial/IMG_0210.JPG',
+  '/Frank/inicial/IMG_0215.JPG',
+  '/Frank/inicial/IMG_3443.JPG',
+  '/Frank/inicial/IMG_5405.JPEG',
+  '/Frank/inicial/b640676d-2da7-423c-98c7-846aebfae2e9.jpg',
 ];
 
 export default function AttractionsPage() {
@@ -62,9 +54,10 @@ export default function AttractionsPage() {
   const [attractions, setAttractions] = useState<Attraction[]>([]);
   const [filteredAttractions, setFilteredAttractions] = useState<Attraction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedCity, setSelectedCity] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const searchParams = useSearchParams();
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    searchParams?.get('category') || 'all'
+  );
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [fundoIndex, setFundoIndex] = useState(0);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -111,14 +104,8 @@ export default function AttractionsPage() {
     { id: 'Cultural', name: t('categories.cultural'), icon: '🏛️', color: 'from-purple-500 to-pink-500' },
     { id: 'Ecoturismo', name: t('categories.ecotourism'), icon: '🌿', color: 'from-green-500 to-emerald-500' },
     { id: 'Praia', name: t('categories.beach'), icon: '🏖️', color: 'from-blue-500 to-cyan-500' },
+    { id: 'Gastronomia', name: t('categories.gastronomy'), icon: '🍽️', color: 'from-red-500 to-orange-500' },
     { id: 'City Tour', name: t('categories.cityTour'), icon: '🏙️', color: 'from-indigo-500 to-blue-500' },
-  ];
-
-  // Cidades (nomes em português mesmo, pois são locais brasileiros)
-  const cities = [
-    { id: 'all', name: t('cities.all'), icon: '📍' },
-    { id: 'Natal', name: 'Natal/RN', icon: '🏖️' },
-    { id: 'Imbituba', name: 'Imbituba/SC', icon: '🏄' },
   ];
 
   useEffect(() => {
@@ -139,34 +126,18 @@ export default function AttractionsPage() {
 
   useEffect(() => {
     let filtered = [...attractions];
-
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(attr => attr.category === selectedCategory);
     }
-
-    if (selectedCity !== 'all') {
-      filtered = filtered.filter(attr => attr.city === selectedCity);
-    }
-
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(attr =>
-        attr.title.toLowerCase().includes(term) ||
-        attr.city.toLowerCase().includes(term) ||
-        attr.state.toLowerCase().includes(term) ||
-        attr.description.toLowerCase().includes(term)
-      );
-    }
-
     setFilteredAttractions(filtered);
-  }, [selectedCategory, selectedCity, searchTerm, attractions]);
+  }, [selectedCategory, attractions]);
 
   const toggleFavorite = async (attractionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const userId = localStorage.getItem('userId');
     
     if (!userId) {
-      router.push('/login');
+      router.push(`/${locale}/login`);
       return;
     }
 
@@ -206,9 +177,9 @@ export default function AttractionsPage() {
   const handleAttractionClick = (attractionId: string) => {
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      router.push('/register?message=CADASTRE-SE OU FAÇA O SEU LOGIN');
+      router.push(`/${locale}/register?message=CADASTRE-SE OU FAÇA O SEU LOGIN`);
     } else {
-      router.push(`/attractions/${attractionId}`);
+      router.push(`/${locale}/attractions/${attractionId}`);
     }
   };
 
@@ -232,7 +203,7 @@ export default function AttractionsPage() {
       {isLoggedIn && userRole === 'CONSUMER' && (
         <div className="max-w-7xl mx-auto px-4 pt-16 sm:pt-20">
           <button
-            onClick={() => router.push('/consumer')}
+            onClick={() => router.push(`/${locale}/consumer`)}
             className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition shadow-md hover:shadow-lg text-xs sm:text-sm min-h-[44px]"
           >
             ← {t('backToDashboard')}
@@ -259,23 +230,6 @@ export default function AttractionsPage() {
             {t('hero.subtitle')}
           </p>
           
-          <div className="max-w-3xl mx-auto px-2 sm:px-0">
-            <div className="bg-white rounded-2xl p-2 shadow-2xl flex flex-col sm:flex-row gap-2">
-              <div className="flex-1 relative">
-                <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm sm:text-base">🔍</span>
-                <input
-                  type="text"
-                  placeholder={t('hero.searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 text-gray-800 placeholder-gray-400 focus:outline-none rounded-xl text-sm sm:text-base"
-                />
-              </div>
-              <button className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition text-sm sm:text-base min-h-[44px]">
-                {t('hero.searchButton')}
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -302,27 +256,6 @@ export default function AttractionsPage() {
         </div>
       </div>
 
-      {/* FILTROS POR CIDADE */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 pb-6 sm:pb-8">
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-          {cities.map((city) => (
-            <button
-              key={city.id}
-              onClick={() => setSelectedCity(city.id)}
-              className={`
-                px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 flex items-center gap-1
-                ${selectedCity === city.id 
-                  ? 'bg-blue-600 text-white shadow-md' 
-                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                }
-              `}
-            >
-              <span className="text-sm">{city.icon}</span>
-              <span>{city.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* RESULTADOS */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-8 sm:py-12">
@@ -344,11 +277,7 @@ export default function AttractionsPage() {
               {t('empty.message')}
             </p>
             <button
-              onClick={() => {
-                setSelectedCategory('all');
-                setSelectedCity('all');
-                setSearchTerm('');
-              }}
+              onClick={() => setSelectedCategory('all')}
               className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition text-sm sm:text-base min-h-[44px]"
             >
               {t('empty.clearFilters')}

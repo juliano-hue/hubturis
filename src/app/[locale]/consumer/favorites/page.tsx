@@ -1,12 +1,10 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import StarDisplay from '@/components/StarDisplay';
-// 🔽 COLE ESTA LINHA AQUI 🔽
-export const dynamic = 'force-dynamic';
 
 interface Favorite {
   id: string;
@@ -27,9 +25,6 @@ interface Favorite {
 
 export default function FavoritesPage() {
   const router = useRouter();
-  const t = useTranslations('favorites');
-  const common = useTranslations('common');
-  
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -63,7 +58,7 @@ export default function FavoritesPage() {
 
   const formatPrice = (price: number, pricingType: string) => {
     if (pricingType === 'FLAT_RATE') {
-      return `R$ ${price} (${t('groupPrice')})`;
+      return `R$ ${price} (grupo)`;
     }
     return `R$ ${price}`;
   };
@@ -71,7 +66,7 @@ export default function FavoritesPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl sm:text-2xl">{common('loading')}</div>
+        <div className="text-xl sm:text-2xl">Carregando favoritos...</div>
       </div>
     );
   }
@@ -80,22 +75,22 @@ export default function FavoritesPage() {
     <div className="min-h-screen bg-gray-50 py-8 sm:py-12 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">❤️ {t('title')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">❤️ Meus Favoritos</h1>
           <Link href="/consumer" className="text-blue-600 hover:text-blue-800 text-sm sm:text-base">
-            ← {t('backToDashboard')}
+            ← Voltar ao Dashboard
           </Link>
         </div>
 
         {favorites.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center">
             <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">❤️</div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2">{t('emptyTitle')}</h2>
-            <p className="text-gray-500 text-sm sm:text-base mb-5 sm:mb-6">{t('emptyMessage')}</p>
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2">Nenhum favorito ainda</h2>
+            <p className="text-gray-500 text-sm sm:text-base mb-5 sm:mb-6">Explore atrações e marque suas preferidas!</p>
             <Link
               href="/attractions"
               className="inline-block px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 text-sm sm:text-base min-h-[44px]"
             >
-              {t('exploreButton')}
+              Explorar atrações
             </Link>
           </div>
         ) : (
@@ -136,7 +131,7 @@ export default function FavoritesPage() {
                     <span className="text-blue-600 font-bold text-sm sm:text-base">
                       {formatPrice(fav.attraction.price, fav.attraction.pricingType)}
                     </span>
-                    <span className="text-blue-600 text-xs sm:text-sm">{t('seeDetails')} →</span>
+                    <span className="text-blue-600 text-xs sm:text-sm">Ver detalhes →</span>
                   </div>
                 </div>
               </div>

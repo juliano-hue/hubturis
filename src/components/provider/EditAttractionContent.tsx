@@ -1,44 +1,44 @@
 'use client';
-export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import ClientOnly from '@/components/ClientOnly';
-
-// Carrega o calendário apenas no cliente
-const Calendar = lazy(() => import('react-calendar').then(mod => ({ default: mod.default })));
-
+import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
-interface ProviderData {
+interface AttractionData {
   id: string;
-  fullName: string;
-  cpf: string;
-  phone: string;
-  address: string;
+  title: string;
+  description: string;
+  location: string;
   city: string;
   state: string;
-  zipCode: string;
-  bankName: string;
-  agency: string;
-  accountNumber: string;
-  accountType: string;
-  pixKey: string;
+  price: number;
+  pricingType: string;
+  duration: number | null;
+  maxCapacity: number | null;
+  category: string | null;
+  images: string[];
 }
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-export default function NewAttractionPage() {
-  const params = useParams();
-  const locale = params?.locale || 'pt';
-  const router = useRouter();
+interface AvailabilityData {
+  id: string;
+  date: string;
+  price: number;
+  maxParticipants: number;
+  isAvailable: boolean;
+}
 
-  const [isClient, setIsClient] = useState(false);
+export default function EditAttractionContent() {
+  const router = useRouter();
+  const params = useParams();
+  const attractionId = params.id as string;
+  
   const [loading, setLoading] = useState(false);
-  const [provider, setProvider] = useState<ProviderData | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -52,19 +52,86 @@ export default function NewAttractionPage() {
     category: '',
   });
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Calendário
+  
+  // ========== CALENDÁRIO DISPONIBILIDADE ==========
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [dateRange, setDateRange] = useState<Value>([new Date(), new Date()]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [pricePerDate, setPricePerDate] = useState<{ [key: string]: number }>({});
   const [availableSlots, setAvailableSlots] = useState<{ [key: string]: number }>({});
+  const [existingAvailabilities, setExistingAvailabilities] = useState<AvailabilityData[]>([]);
 
-  const estados = ['AC', 'AL', 'AP', 'AM', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+  // Carregar dados da atração
+  useEffect(() => {
+    const fetchAttraction = async () => {
+      try {
+        const response = await fetch(`/api/provider/attractions/${attractionId}`);
+        if (!response.ok) throw new Error('Erro ao carregar atração');
+        
+        const data: AttractionData = await response.json();
+        
+        setFormData({
+          title: data.title,
+          description: data.description,
+          location: data.location,
+          city: data.city,
+          state: data.state,
+          price: data.price.toString(),
+          pricingType: data.pricingType,
+          duration: data.duration?.toString() || '',
+          maxCapacity: data.maxCapacity?.toString() || '',
+          category: data.category || '',
+        });
+        
+        setExistingImages(data.images || []);
+      } catch (error) {
+        console.error('Erro:', error);
+        setError('Erro ao carregar dados da atração');
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    // Carregar disponibilidades existentes
+    const fetchAvailabilities = async () => {
+      try {
+        const response = await fetch(`/api/provider/availabilities?attractionId=${attractionId}`);
+        if (response.ok) {
+          const data: AvailabilityData[] = await response.json();
+          setExistingAvailabilities(data);
+          
+          // Preencher datas selecionadas com as existentes
+          const dates = data.map(a => new Date(a.date));
+          setSelectedDates(dates);
+          
+          const prices: { [key: string]: number } = {};
+          const slots: { [key: string]: number } = {};
+          data.forEach(a => {
+            prices[a.date] = a.price;
+            slots[a.date] = a.maxParticipants;
+          });
+          setPricePerDate(prices);
+          setAvailableSlots(slots);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar disponibilidades:', error);
+      }
+    };
+
+    if (attractionId) {
+      fetchAttraction();
+      fetchAvailabilities();
+    }
+  }, [attractionId]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   // ========== FUNÇÕES DO CALENDÁRIO ==========
   const onDateChange = (value: Value) => {
@@ -110,39 +177,78 @@ export default function NewAttractionPage() {
   const updateDateSlots = (date: Date, newSlots: number) => {
     setAvailableSlots({ ...availableSlots, [date.toISOString()]: newSlots });
   };
+  // ================================================
 
+  // Processar arquivos
   const processFiles = (files: FileList | File[]) => {
     const fileArray = Array.from(files);
-    const validFiles = fileArray.filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'));
-    if (validFiles.length !== fileArray.length) setError('Apenas imagens e vídeos são permitidos');
-    if (validFiles.length + images.length > 20) {
+    const imageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'];
+    const videoExts = ['mp4', 'webm', 'mov', 'avi'];
+    const validFiles = fileArray.filter(file => {
+      if (file.type.startsWith('image/') || file.type.startsWith('video/')) return true;
+      const ext = file.name.toLowerCase().split('.').pop() || '';
+      return imageExts.includes(ext) || videoExts.includes(ext);
+    });
+    
+    if (validFiles.length !== fileArray.length) {
+      setError('Apenas imagens e vídeos são permitidos');
+    }
+    
+    if (validFiles.length + images.length + existingImages.length > 20) {
       setError('Máximo de 20 arquivos permitidos');
       return;
     }
+    
     const newPreviews = validFiles.map(file => URL.createObjectURL(file));
     setImages(prev => [...prev, ...validFiles]);
     setImagePreviews(prev => [...prev, ...newPreviews]);
     setError('');
   };
 
-  const handleImageClick = () => fileInputRef.current?.click();
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) processFiles(e.target.files);
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
+    }
   };
-  const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
-  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
-  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation(); setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
+    }
   };
-  const removeImage = (index: number) => {
+
+  const removeExistingImage = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index: number) => {
     URL.revokeObjectURL(imagePreviews[index]);
     setImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  const uploadImages = async (): Promise<string[]> => {
+  const uploadNewImages = async (): Promise<string[]> => {
     const uploadedUrls: string[] = [];
     for (const file of images) {
       const formData = new FormData();
@@ -153,7 +259,9 @@ export default function NewAttractionPage() {
           const data = await response.json();
           uploadedUrls.push(data.url);
         }
-      } catch (error) { console.error(error); }
+      } catch (error) {
+        console.error(`Erro ao enviar ${file.name}:`, error);
+      }
     }
     return uploadedUrls;
   };
@@ -162,80 +270,97 @@ export default function NewAttractionPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) { router.push(`/${locale}/login`); return; }
-      const attractionResponse = await fetch('/api/provider/attractions', {
-        method: 'POST',
+      // 1. Upload das novas imagens
+      let newImageUrls: string[] = [];
+      if (images.length > 0) {
+        newImageUrls = await uploadNewImages();
+      }
+      const allImages = [...existingImages, ...newImageUrls];
+
+      // 2. Atualizar atração
+      const response = await fetch(`/api/provider/attractions/${attractionId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           price: parseFloat(formData.price),
           duration: formData.duration ? parseInt(formData.duration) : null,
           maxCapacity: formData.maxCapacity ? parseInt(formData.maxCapacity) : null,
-          providerId: userId,
+          images: allImages,
         }),
       });
-      const attractionData = await attractionResponse.json();
-      if (!attractionResponse.ok) throw new Error(attractionData.error || 'Erro ao criar atração');
-      const attractionId = attractionData.id;
-      if (images.length > 0) {
-        const uploadedUrls = await uploadImages();
-        if (uploadedUrls.length > 0) {
-          await fetch(`/api/provider/attractions/${attractionId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ images: uploadedUrls }),
-          });
-        }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao atualizar atração');
       }
-      const availabilityData = selectedDates.map(date => ({
-        attractionId,
-        date: date.toISOString(),
-        price: pricePerDate[date.toISOString()] || parseFloat(formData.price) || 0,
-        maxParticipants: availableSlots[date.toISOString()] || parseInt(formData.maxCapacity) || 10,
-      }));
-      if (availabilityData.length > 0) {
-        await fetch('/api/provider/availability', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ availabilities: availabilityData }),
-        });
-      }
-      router.push(`/${locale}/provider/my-attractions`);
-    } catch (error) {
-      console.error(error);
-      setError(error instanceof Error ? error.message : 'Erro ao cadastrar atração');
-    } finally { setLoading(false); }
-  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
-    const fetchProvider = async () => {
+      // 3. Atualizar disponibilidades (calendário)
       try {
-        const userId = localStorage.getItem('userId');
-        if (!userId) { router.push(`/${locale}/login`); return; }
-        const response = await fetch(`/api/provider/profile?userId=${userId}`);
-        const data = await response.json();
-        if (response.ok) setProvider(data);
-        else router.push(`/${locale}/provider/profile`);
-      } catch (error) { router.push(`/${locale}/provider/profile`); }
-    };
-    fetchProvider();
-  }, [isClient, router, locale]);
+        // Primeiro, remover todas as disponibilidades existentes desta atração
+        console.log('🗑️ Removendo disponibilidades antigas para:', attractionId);
+        const deleteResponse = await fetch(`/api/provider/availabilities?attractionId=${attractionId}`, {
+          method: 'DELETE',
+        });
 
-  if (!isClient || !provider) {
-    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+        if (!deleteResponse.ok) {
+          const errorData = await deleteResponse.json();
+          console.error('Erro ao deletar:', errorData);
+          throw new Error('Erro ao remover disponibilidades antigas');
+        }
+        console.log('✅ Disponibilidades antigas removidas');
+
+        // Depois, adicionar as novas datas selecionadas
+        if (selectedDates.length > 0) {
+          const availabilityData = selectedDates.map(date => ({
+            attractionId,
+            date: date.toISOString(),
+            price: pricePerDate[date.toISOString()] || parseFloat(formData.price) || 0,
+            maxParticipants: availableSlots[date.toISOString()] || parseInt(formData.maxCapacity) || 10,
+          }));
+
+          console.log('📝 Enviando novas disponibilidades:', availabilityData);
+
+          const createResponse = await fetch('/api/provider/availabilities', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ availabilities: availabilityData }),
+          });
+
+          if (!createResponse.ok) {
+            const errorData = await createResponse.json();
+            console.error('Erro ao criar:', errorData);
+            throw new Error(errorData.error || 'Erro ao salvar disponibilidades');
+          }
+
+          const result = await createResponse.json();
+          console.log('✅ Disponibilidades salvas:', result);
+        }
+      } catch (error) {
+        console.error('❌ Erro no processo de disponibilidades:', error);
+        setError(error instanceof Error ? error.message : 'Erro ao salvar disponibilidades');
+        setLoading(false);
+        return;
+      }
+
+      router.push('/provider/my-attractions');
+    } catch (error) {
+      console.error('Erro:', error);
+      setError(error instanceof Error ? error.message : 'Erro ao atualizar atração');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const estados = ['AC', 'AL', 'AP', 'AM', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+
+  if (initialLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><div className="text-gray-500">Carregando...</div></div>;
   }
+
+  const totalFiles = existingImages.length + images.length;
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 sm:py-8">
@@ -251,24 +376,21 @@ export default function NewAttractionPage() {
           <Link href="/provider/my-attractions" className="text-blue-600 hover:text-blue-700 inline-block text-sm sm:text-base">
             ← Voltar para minhas atrações
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">Cadastrar Nova Atração</h1>
-          <p className="text-gray-600 text-sm sm:text-base mt-1">Preencha os dados da sua experiência turística</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">Editar Atração</h1>
+          <p className="text-gray-600 text-sm sm:text-base mt-1">Altere os dados da sua experiência turística</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Título */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Título da Atração *</label>
             <input type="text" name="title" required value={formData.title} onChange={handleInputChange} className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-base" />
           </div>
 
-          {/* Descrição */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Descrição Completa *</label>
             <textarea name="description" required rows={5} value={formData.description} onChange={handleInputChange} className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-base" />
           </div>
 
-          {/* Localização e Cidade */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Localização *</label>
@@ -280,7 +402,6 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
-          {/* Estado e Categoria */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
@@ -303,7 +424,6 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
-          {/* Preço e tipo */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Precificação *</label>
@@ -318,7 +438,6 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
-          {/* Duração e Capacidade */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Duração (horas)</label>
@@ -330,32 +449,47 @@ export default function NewAttractionPage() {
             </div>
           </div>
 
-          {/* CALENDÁRIO - Com ClientOnly */}
+          {/* CALENDÁRIO */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
             <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">📅 Datas de Disponibilidade</label>
+            
             <button type="button" onClick={() => setShowCalendar(!showCalendar)} className="mb-3 sm:mb-4 inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base min-h-[40px]">
               {showCalendar ? 'Fechar Calendário' : '➕ Adicionar Datas'}
             </button>
+
             {showCalendar && (
               <div className="mb-4 sm:mb-6 p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50 overflow-x-auto">
-                <ClientOnly>
-                  <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
-                    <Calendar onChange={onDateChange} value={dateRange} selectRange={true} className="w-full border-0" />
-                  </Suspense>
-                </ClientOnly>
+                <Calendar onChange={onDateChange} value={dateRange} selectRange={true} className="w-full border-0" />
                 <p className="text-xs sm:text-sm text-gray-500 mt-2">Clique em uma data para selecionar um dia, ou arraste para selecionar um intervalo.</p>
               </div>
             )}
+
             {selectedDates.length > 0 && (
               <div className="mt-4">
                 <h4 className="text-sm sm:text-md font-medium text-gray-700 mb-2 sm:mb-3">Datas Disponíveis: ({selectedDates.length})</h4>
                 <div className="space-y-2 sm:space-y-3 max-h-60 overflow-y-auto">
                   {selectedDates.sort((a, b) => a.getTime() - b.getTime()).map((date, index) => (
                     <div key={index} className="flex flex-wrap items-center gap-2 sm:gap-4 p-2 sm:p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1 min-w-[100px]"><span className="font-medium text-sm sm:text-base">{date.toLocaleDateString('pt-BR')}</span></div>
+                      <div className="flex-1 min-w-[100px]">
+                        <span className="font-medium text-sm sm:text-base">{date.toLocaleDateString('pt-BR')}</span>
+                      </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <input type="number" value={pricePerDate[date.toISOString()] || formData.price} onChange={(e) => updateDatePrice(date, parseFloat(e.target.value))} step="0.01" className="w-24 sm:w-28 px-2 py-1 border rounded text-sm" placeholder="Preço" />
-                        <input type="number" value={availableSlots[date.toISOString()] || formData.maxCapacity || 10} onChange={(e) => updateDateSlots(date, parseInt(e.target.value))} min="1" className="w-16 sm:w-20 px-2 py-1 border rounded text-sm" placeholder="Vagas" />
+                        <input
+                          type="number"
+                          value={pricePerDate[date.toISOString()] || formData.price}
+                          onChange={(e) => updateDatePrice(date, parseFloat(e.target.value))}
+                          step="0.01"
+                          className="w-24 sm:w-28 px-2 py-1 border rounded text-sm"
+                          placeholder="Preço"
+                        />
+                        <input
+                          type="number"
+                          value={availableSlots[date.toISOString()] || formData.maxCapacity || 10}
+                          onChange={(e) => updateDateSlots(date, parseInt(e.target.value))}
+                          min="1"
+                          className="w-16 sm:w-20 px-2 py-1 border rounded text-sm"
+                          placeholder="Vagas"
+                        />
                         <button type="button" onClick={() => removeDate(date)} className="text-red-500 hover:text-red-700 text-base sm:text-sm px-2 min-w-[32px]">✕</button>
                       </div>
                     </div>
@@ -367,44 +501,61 @@ export default function NewAttractionPage() {
 
           {/* UPLOAD */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
-            <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">📸 Fotos e Vídeos (máximo 20)</label>
-            <input type="file" ref={fileInputRef} multiple accept="image/*,video/*" onChange={handleImageChange} className="hidden" />
-            <div
-              onClick={handleImageClick}
+            <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">📸 Fotos e Vídeos (máximo 20) - {totalFiles}/20</label>
+            <label
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              className={`flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 ${
-                isDragging
-                  ? 'border-blue-500 bg-blue-50 scale-[1.02] shadow-lg'
-                  : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-              }`}
+              className={`flex flex-col items-center justify-center w-full h-48 sm:h-56 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 ${isDragging ? 'border-blue-500 bg-blue-50 shadow-lg' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'}`}
             >
-              <div className="text-center px-4">
-                <div className="text-5xl sm:text-6xl mb-3">{isDragging ? '📂' : '📸'}</div>
-                <p className="text-base sm:text-lg font-semibold text-gray-700 mb-1">
+              <input type="file" multiple accept="image/*,video/*" onChange={handleImageChange} className="sr-only" />
+              <div className="text-center px-4 pointer-events-none">
+                <div className="text-4xl sm:text-5xl mb-2">{isDragging ? '📂' : '📸'}</div>
+                <p className="text-sm sm:text-base font-semibold text-gray-700 mb-1">
                   {isDragging ? 'Solte as fotos aqui!' : 'Arraste as fotos para cá'}
                 </p>
-                <p className="text-sm text-gray-500 mb-3">ou</p>
-                <span className="px-5 py-2 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition">
+                <p className="text-xs text-gray-500 mb-2">ou</p>
+                <span className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs sm:text-sm font-medium">
                   Clique para selecionar
                 </span>
-                <p className="text-xs text-gray-400 mt-3">JPG, PNG, WEBP (até 10MB) | MP4, WEBM (até 100MB)</p>
-                <p className="text-xs text-gray-400">{imagePreviews.length}/20 arquivos</p>
+                <p className="text-xs text-gray-400 mt-2">JPG, PNG, WEBP (até 10MB) | MP4, WEBM (até 100MB)</p>
+                <p className="text-xs text-gray-400">{totalFiles}/20 arquivos</p>
               </div>
-            </div>
+            </label>
+
+            {/* Imagens existentes */}
+            {existingImages.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Imagens atuais:</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                  {existingImages.map((url, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Imagem ${index + 1}`}
+                        onError={(e) => { const t = e.target as HTMLImageElement; t.onerror = null; t.src = '/Frank/inicial/IMG_0204.JPG'; }}
+                        className="w-full h-28 sm:h-32 object-cover rounded-lg"
+                      />
+                      <button type="button" onClick={() => removeExistingImage(index)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 w-5 h-5 sm:w-6 sm:h-6 opacity-0 group-hover:opacity-100 hover:bg-red-700 text-xs sm:text-base">×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Novas imagens */}
             {imagePreviews.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    {images[index]?.type.startsWith('video/') ? 
-                      <video src={preview} className="w-full h-28 sm:h-32 object-cover rounded-lg" controls /> : 
+              <div className="mt-4">
+                <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Novas imagens:</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative group">
                       <img src={preview} alt="Preview" className="w-full h-28 sm:h-32 object-cover rounded-lg" />
-                    }
-                    <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 w-5 h-5 sm:w-6 sm:h-6 opacity-0 group-hover:opacity-100 hover:bg-red-700 text-xs sm:text-base">×</button>
-                  </div>
-                ))}
+                      <button type="button" onClick={() => removeNewImage(index)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 w-5 h-5 sm:w-6 sm:h-6 opacity-0 group-hover:opacity-100 hover:bg-red-700 text-xs sm:text-base">×</button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -412,7 +563,7 @@ export default function NewAttractionPage() {
           {error && <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs sm:text-sm">{error}</div>}
 
           <button type="submit" disabled={loading} className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg disabled:opacity-50 text-sm sm:text-base min-h-[44px]">
-            {loading ? 'Cadastrando...' : 'Cadastrar Atração'}
+            {loading ? 'Salvando...' : 'Salvar Alterações'}
           </button>
         </form>
       </div>

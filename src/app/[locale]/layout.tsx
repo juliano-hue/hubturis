@@ -1,8 +1,20 @@
+// src/app/[locale]/layout.tsx
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
-import Navbar from '@/components/Navbar';
+import ClientNavbarWrapper from '@/components/ClientNavbarWrapper';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'HubTuris',
+  description: 'As melhores experiências turísticas de Natal e Região',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
+};
 
 export default async function LocaleLayout({
   children,
@@ -12,7 +24,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  
+
   if (!routing.locales.includes(locale as any)) {
     notFound();
   }
@@ -20,11 +32,16 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages} locale={locale}>
-      <Navbar />
-      <div className="pt-16">
-        {children}
-      </div>
-    </NextIntlClientProvider>
+    <html lang={locale}>
+      <body>
+        {/* O ClientNavbarWrapper já contém o SessionProvider e o Navbar dinâmico */}
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <ClientNavbarWrapper /> {/* <--- Use o ClientNavbarWrapper aqui */}
+          <div className="pt-16">
+            {children}
+          </div>
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }
