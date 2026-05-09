@@ -99,6 +99,8 @@ function LoginPageContent() {
           if (session.user.role === 'PROVIDER') {
             router.push('/provider/my-attractions');
           } else if (session.user.role === 'ADMIN') {
+            localStorage.setItem('adminLoggedIn', 'true');
+            localStorage.setItem('adminEmail', session.user.email);
             router.push('/admin');
           } else {
             router.push(`/${locale}/consumer`);

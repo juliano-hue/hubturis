@@ -1,20 +1,25 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
 interface Props {
-  attractionId?: string; // se não informado = nova atração
+  attractionId?: string;
 }
 
 const ESTADOS = ['AC','AL','AP','AM','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
 
 const today = new Date().toISOString().split('T')[0];
 
-export default function AttractionFormContent({ attractionId }: Props) {
+export default function AttractionFormContent({ attractionId: propId }: Props) {
   const router = useRouter();
+  const routeParams = useParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Pega o ID do prop ou da URL, mas ignora "new" como ID
+  const rawId = propId || (routeParams?.id as string) || '';
+  const attractionId = rawId === 'new' ? '' : rawId;
   const isEdit = !!attractionId;
 
   const [loading, setLoading] = useState(false);
@@ -148,7 +153,7 @@ export default function AttractionFormContent({ attractionId }: Props) {
     for (const file of images) {
       const fd = new FormData(); fd.append('file', file);
       try {
-        const res = await fetch('/api/upload', { method: 'POST', body: fd });
+        const res = await fetch('/upload', { method: 'POST', body: fd });
         if (res.ok) { const data = await res.json(); urls.push(data.url); }
       } catch { console.error('upload error'); }
     }

@@ -43,8 +43,10 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem('adminLoggedIn') !== 'true') {
-      router.push('/admin/login');
+    const isAdmin = localStorage.getItem('adminLoggedIn') === 'true' ||
+                    localStorage.getItem('userRole') === 'ADMIN';
+    if (!isAdmin) {
+      router.push('/pt/login');
     }
   }, [router]);
 
@@ -99,9 +101,8 @@ export default function AdminPage() {
   };
 
   const logout = () => {
-    localStorage.removeItem('adminLoggedIn');
-    localStorage.removeItem('adminEmail');
-    router.push('/admin/login');
+    localStorage.clear();
+    router.push('/pt/login');
   };
 
   const filteredUsers = users.filter(u =>
