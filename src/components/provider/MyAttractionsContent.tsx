@@ -276,10 +276,23 @@ export default function MyAttractionsPage() {
                           </div>
                         )}
                       </div>
-                      
                       <div className="text-blue-600 text-xs sm:text-sm font-medium group-hover:translate-x-1 transition">
                         Editar →
                       </div>
+                    </div>
+
+                    {/* TURBO BOOST + VIEWS */}
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100" onClick={e => e.stopPropagation()}>
+                      <div className="flex gap-2 text-xs text-gray-400">
+                        <span>👁️ {(attr as any).viewCount ?? 0}</span>
+                        <span>🖱️ {(attr as any).clickCount ?? 0}</span>
+                      </div>
+                      <button
+                        onClick={() => router.push('/provider/plan')}
+                        className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-medium rounded-full hover:from-orange-600 hover:to-red-600 transition"
+                      >
+                        ⚡ Boost
+                      </button>
                     </div>
                   </div>
                 </div>

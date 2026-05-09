@@ -4,6 +4,7 @@ import ClientOnly from '@/components/ClientOnly';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { PLAN_CONFIG, PlanType } from '@/lib/plans';
 
 // Imagens disponíveis na pasta atracoes-natal
 const imagensDisponiveis = [
@@ -32,6 +33,7 @@ export default function ProviderDashboard() {
     totalRevenue: 0,
     pendingBookings: 0
   });
+  const [planData, setPlanData] = useState<{ planType: string; totalViews: number; totalClicks: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
   const [fundoIndex, setFundoIndex] = useState(0);
@@ -88,6 +90,11 @@ export default function ProviderDashboard() {
     };
 
     fetchStats();
+
+    fetch(`/api/provider/plan?providerId=${userId}`)
+      .then(res => res.json())
+      .then(data => setPlanData(data))
+      .catch(console.error);
   }, [isClient, router]);
 
   const formatPrice = (price: number) => {
@@ -188,6 +195,38 @@ export default function ProviderDashboard() {
               </div>
             </div>
 
+            {/* CARD DE PLANO */}
+            {planData && (() => {
+              const plan = (planData.planType || 'BRONZE') as PlanType;
+              const pc = PLAN_CONFIG[plan];
+              const isUpgradeable = plan === 'BRONZE';
+              return (
+                <div className={`rounded-2xl border-2 ${pc.borderColor} ${pc.bgColor} p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl">{pc.emoji}</span>
+                    <div>
+                      <p className="text-xs text-gray-500">Plano atual</p>
+                      <p className={`text-lg font-bold ${pc.color}`}>{pc.name}</p>
+                      <div className="flex gap-3 text-xs text-gray-500 mt-0.5">
+                        <span>👁️ {planData.totalViews} views</span>
+                        <span>🖱️ {planData.totalClicks} cliques</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link href="/provider/plan" className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-sm hover:bg-gray-50 transition">
+                      Ver detalhes
+                    </Link>
+                    {isUpgradeable && (
+                      <Link href="/provider/plan" className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full text-sm font-semibold hover:from-yellow-600 hover:to-orange-600 transition">
+                        🚀 Fazer upgrade
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* NAVEGAÇÃO RÁPIDA */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
               <Link
@@ -224,6 +263,30 @@ export default function ProviderDashboard() {
                 <div className="text-4xl mb-3">👤</div>
                 <h3 className="text-lg font-semibold">Meu Perfil</h3>
                 <p className="text-sm text-orange-100 mt-1">Altere suas informações</p>
+              </Link>
+            </div>
+
+            {/* LINK MEU PLANO */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              <Link
+                href="/provider/plan"
+                className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-2xl p-5 flex items-center gap-4 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <div className="text-4xl">⭐</div>
+                <div>
+                  <h3 className="text-lg font-semibold">Meu Plano & Visibilidade</h3>
+                  <p className="text-sm text-yellow-100">Gerencie plano e Turbo Boost</p>
+                </div>
+              </Link>
+              <Link
+                href="/provider/attractions/new"
+                className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-2xl p-5 flex items-center gap-4 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <div className="text-4xl">⚡</div>
+                <div>
+                  <h3 className="text-lg font-semibold">Turbo Boost</h3>
+                  <p className="text-sm text-teal-100">Destaque sua atração agora</p>
+                </div>
               </Link>
             </div>
 

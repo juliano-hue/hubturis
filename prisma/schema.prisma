@@ -15,6 +15,8 @@ model User {
   role            UserRole         @default(CONSUMER)
   emailVerified   DateTime?
   image           String?
+  planType        String           @default("BRONZE")
+  planExpiresAt   DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   attractions     Attraction[]
@@ -88,6 +90,9 @@ model Attraction {
   updatedAt      DateTime       @updatedAt
   images         String[]
   pricingType    String         @default("PER_PERSON")
+  featuredUntil  DateTime?
+  viewCount      Int            @default(0)
+  clickCount     Int            @default(0)
   provider       User           @relation(fields: [providerId], references: [id], onDelete: Cascade)
   availabilities Availability[]
   bookings       Booking[]
