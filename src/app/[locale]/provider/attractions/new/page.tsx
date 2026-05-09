@@ -299,6 +299,7 @@ export default function NewAttractionPage() {
                 <option value="Praia">🏖️ Praia</option>
                 <option value="Gastronomia">🍽️ Gastronomia</option>
                 <option value="City Tour">🏙️ City Tour</option>
+                <option value="Hospedagem">🏨 Hospedagem</option>
               </select>
             </div>
           </div>

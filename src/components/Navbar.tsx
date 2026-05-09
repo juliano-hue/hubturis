@@ -150,6 +150,9 @@ export default function Navbar() {
                 <Link href="/attractions" className="text-gray-700 hover:text-blue-600 transition">
                   {t('explore')}
                 </Link>
+                <Link href={`/${locale}/map`} className="text-gray-700 hover:text-blue-600 transition">
+                  🗺️ Mapa
+                </Link>
                 <a href="#destinos" className="text-gray-700 hover:text-blue-600 transition">
                   {t('destinations')}
                 </a>

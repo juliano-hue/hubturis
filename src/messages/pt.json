@@ -56,7 +56,8 @@
       "ecotourism": "Ecoturismo",
       "beach": "Praia",
       "gastronomy": "Gastronomia",
-      "cityTour": "City Tour"
+      "cityTour": "City Tour",
+      "accommodation": "Hospedagem"
     },
     "cities": {
       "all": "Todas as cidades"

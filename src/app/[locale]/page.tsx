@@ -158,6 +158,7 @@ export default function HomePage() {
     { nome: 'Praia', icone: '🏖️', cor: 'bg-blue-100 text-blue-600', descricao: 'Sol, mar e diversão' },
     { nome: 'Gastronomia', icone: '🍽️', cor: 'bg-red-100 text-red-600', descricao: 'Sabores e experiências' },
     { nome: 'City Tour', icone: '🏙️', cor: 'bg-indigo-100 text-indigo-600', descricao: 'Conheça a cidade' },
+    { nome: 'Hospedagem', icone: '🏨', cor: 'bg-pink-100 text-pink-600', descricao: 'Hotéis e pousadas' },
   ];
 
   if (!mounted) {

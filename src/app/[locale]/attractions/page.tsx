@@ -111,6 +111,7 @@ export default function AttractionsPage() {
     { id: 'Praia', name: t('categories.beach'), icon: '🏖️', color: 'from-blue-500 to-cyan-500' },
     { id: 'Gastronomia', name: t('categories.gastronomy'), icon: '🍽️', color: 'from-red-500 to-orange-500' },
     { id: 'City Tour', name: t('categories.cityTour'), icon: '🏙️', color: 'from-indigo-500 to-blue-500' },
+    { id: 'Hospedagem', name: t('categories.accommodation'), icon: '🏨', color: 'from-pink-500 to-rose-500' },
   ];
 
   useEffect(() => {

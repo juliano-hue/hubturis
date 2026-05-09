@@ -55,7 +55,8 @@
       "cultural": "Cultural",
       "ecotourism": "Ecotourism",
       "beach": "Beach",
-      "cityTour": "City Tour"
+      "cityTour": "City Tour",
+      "accommodation": "Accommodation"
     },
     "cities": {
       "all": "All cities"
