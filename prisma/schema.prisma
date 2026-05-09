@@ -214,6 +214,30 @@ model AccessLog {
   @@map("access_logs")
 }
 
+model Promoter {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  code        String   @unique
+  phone       String?
+  createdAt   DateTime @default(now())
+  referrals   Referral[]
+
+  @@map("promoters")
+}
+
+model Referral {
+  id          String   @id @default(uuid())
+  promoterId  String
+  userId      String
+  userRole    String
+  createdAt   DateTime @default(now())
+  promoter    Promoter @relation(fields: [promoterId], references: [id], onDelete: Cascade)
+
+  @@index([promoterId])
+  @@map("referrals")
+}
+
 enum UserRole {
   CONSUMER
   PROVIDER

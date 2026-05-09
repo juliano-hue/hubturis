@@ -63,6 +63,11 @@ export default function AttractionsPage() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [searchText, setSearchText] = useState('');
+  const [maxPrice, setMaxPrice] = useState<number>(5000);
+  const [minRating, setMinRating] = useState<number>(0);
+  const [filterDuration, setFilterDuration] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   // Verificar login ao carregar
   useEffect(() => {
@@ -129,8 +134,30 @@ export default function AttractionsPage() {
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(attr => attr.category === selectedCategory);
     }
+    if (searchText.trim()) {
+      const q = searchText.toLowerCase();
+      filtered = filtered.filter(attr =>
+        attr.title.toLowerCase().includes(q) ||
+        attr.description.toLowerCase().includes(q) ||
+        attr.city.toLowerCase().includes(q) ||
+        (attr.category || '').toLowerCase().includes(q)
+      );
+    }
+    filtered = filtered.filter(attr => attr.price <= maxPrice);
+    if (minRating > 0) {
+      filtered = filtered.filter(attr => attr.averageRating >= minRating);
+    }
+    if (filterDuration !== 'all') {
+      filtered = filtered.filter(attr => {
+        const d = attr.duration || 0;
+        if (filterDuration === 'short') return d <= 2;
+        if (filterDuration === 'medium') return d > 2 && d <= 6;
+        if (filterDuration === 'long') return d > 6;
+        return true;
+      });
+    }
     setFilteredAttractions(filtered);
-  }, [selectedCategory, attractions]);
+  }, [selectedCategory, attractions, searchText, maxPrice, minRating, filterDuration]);
 
   const toggleFavorite = async (attractionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -257,8 +284,88 @@ export default function AttractionsPage() {
       </div>
 
 
+      {/* BUSCA E FILTROS AVANÇADOS */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 pb-4">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            placeholder="🔍 Buscar por nome, cidade ou categoria..."
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white shadow-sm"
+          />
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-4 py-3 rounded-xl border text-sm font-medium transition shadow-sm flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+          >
+            ⚙️ Filtros
+          </button>
+        </div>
+
+        {showFilters && (
+          <div className="mt-3 bg-white border border-gray-200 rounded-xl p-4 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-medium text-gray-600 mb-1 block">Preço máximo: R$ {maxPrice}</label>
+              <input
+                type="range" min={0} max={5000} step={50}
+                value={maxPrice}
+                onChange={e => setMaxPrice(Number(e.target.value))}
+                className="w-full accent-blue-600"
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>R$ 0</span><span>R$ 5.000</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-gray-600 mb-2 block">Avaliação mínima</label>
+              <div className="flex gap-2">
+                {[0,3,4,4.5].map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setMinRating(r)}
+                    className={`px-2 py-1 rounded-full text-xs transition ${minRating === r ? 'bg-yellow-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  >
+                    {r === 0 ? 'Todas' : `${r}★+`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-gray-600 mb-2 block">Duração</label>
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { key: 'all', label: 'Todas' },
+                  { key: 'short', label: 'Até 2h' },
+                  { key: 'medium', label: '2h a 6h' },
+                  { key: 'long', label: '6h+' },
+                ].map(d => (
+                  <button
+                    key={d.key}
+                    onClick={() => setFilterDuration(d.key)}
+                    className={`px-2 py-1 rounded-full text-xs transition ${filterDuration === d.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="sm:col-span-3 flex justify-end">
+              <button
+                onClick={() => { setSearchText(''); setMaxPrice(5000); setMinRating(0); setFilterDuration('all'); setSelectedCategory('all'); }}
+                className="text-sm text-red-500 hover:text-red-700 transition"
+              >
+                Limpar todos os filtros
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* RESULTADOS */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 sm:mb-10 gap-4">
           <div>
             <h2 className="text-xl sm:text-3xl font-bold text-gray-800">
@@ -277,7 +384,7 @@ export default function AttractionsPage() {
               {t('empty.message')}
             </p>
             <button
-              onClick={() => setSelectedCategory('all')}
+              onClick={() => { setSelectedCategory('all'); setSearchText(''); setMaxPrice(5000); setMinRating(0); setFilterDuration('all'); }}
               className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition text-sm sm:text-base min-h-[44px]"
             >
               {t('empty.clearFilters')}

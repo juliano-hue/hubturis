@@ -33,6 +33,7 @@ export default function RegisterPage() {
   const common = useTranslations('common');
   
   const message = searchParams.get('message');
+  const ref = searchParams.get('ref') || '';
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -47,6 +48,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -75,13 +77,18 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!acceptedTerms) {
+      setError('Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name || email.split('@')[0], email, password, role }),
+        body: JSON.stringify({ name: name || email.split('@')[0], email, password, role, ...(ref && { ref }) }),
       });
 
       const data = await response.json();
@@ -224,10 +231,32 @@ export default function RegisterPage() {
             </select>
           </div>
 
+          {/* ACEITE LGPD */}
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="acceptTerms"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer flex-shrink-0"
+            />
+            <label htmlFor="acceptTerms" className="text-sm text-gray-600 cursor-pointer leading-relaxed">
+              Li e aceito os{' '}
+              <Link href={`/${locale}/terms`} target="_blank" className="text-blue-600 hover:underline font-medium">
+                Termos de Uso
+              </Link>{' '}
+              e a{' '}
+              <Link href={`/${locale}/privacy`} target="_blank" className="text-blue-600 hover:underline font-medium">
+                Política de Privacidade
+              </Link>
+              , incluindo o tratamento dos meus dados pessoais conforme a LGPD.
+            </label>
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white font-bold py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg transition-all duration-300 transform hover:scale-105 min-h-[48px]"
+            disabled={loading || !acceptedTerms}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg transition-all duration-300 transform hover:scale-105 min-h-[48px]"
           >
             {loading ? t('creatingButton') : t('submitButton')}
           </button>

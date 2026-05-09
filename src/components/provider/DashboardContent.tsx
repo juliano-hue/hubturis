@@ -266,8 +266,8 @@ export default function ProviderDashboard() {
               </Link>
             </div>
 
-            {/* LINK MEU PLANO */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {/* LINKS EXTRAS */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               <Link
                 href="/provider/plan"
                 className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-2xl p-5 flex items-center gap-4 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
@@ -286,6 +286,16 @@ export default function ProviderDashboard() {
                 <div>
                   <h3 className="text-lg font-semibold">Turbo Boost</h3>
                   <p className="text-sm text-teal-100">Destaque sua atração agora</p>
+                </div>
+              </Link>
+              <Link
+                href="/provider/financial"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl p-5 flex items-center gap-4 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <div className="text-4xl">💰</div>
+                <div>
+                  <h3 className="text-lg font-semibold">Extrato Financeiro</h3>
+                  <p className="text-sm text-green-100">Receitas e repasses</p>
                 </div>
               </Link>
             </div>

@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, email, password, role = 'CONSUMER' } = validation.data;
+    const ref = (body as any).ref || null;
 
     console.log('📝 Recebendo cadastro:', { name, email, role });
 
@@ -91,6 +92,20 @@ export async function POST(req: NextRequest) {
         providerProfile: role === 'PROVIDER'
       }
     });
+
+    // Registrar referência do promotor se houver
+    if (ref) {
+      try {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        await fetch(`${appUrl}/api/referral`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ref, userId: user.id, userRole: role }),
+        });
+      } catch (refError) {
+        console.log('⚠️ Erro ao registrar referência:', refError);
+      }
+    }
 
     // Tentar enviar e-mail (mas não falhar se der erro)
     try {

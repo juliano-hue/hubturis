@@ -141,6 +141,9 @@ export default function Navbar() {
                 <Link href="/provider/bookings" className="text-gray-700 hover:text-blue-600 transition">
                   📅 Reservas
                 </Link>
+                <Link href="/provider/financial" className="text-gray-700 hover:text-blue-600 transition">
+                  💰 Financeiro
+                </Link>
               </>
             ) : (
               <>
@@ -233,6 +236,9 @@ export default function Navbar() {
                 </Link>
                 <Link href="/provider/bookings" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
                   📅 Reservas
+                </Link>
+                <Link href="/provider/financial" className="block text-gray-700 hover:text-blue-600 py-2" onClick={() => setMenuOpen(false)}>
+                  💰 Financeiro
                 </Link>
               </>
             ) : (
