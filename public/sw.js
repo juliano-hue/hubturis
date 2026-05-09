@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hubturis-v1';
+const CACHE_NAME = 'hubturis-v2';
 const OFFLINE_URL = '/offline';
 
 const STATIC_ASSETS = [
