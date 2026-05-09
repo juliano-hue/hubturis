@@ -15,7 +15,30 @@ export async function GET(request: NextRequest) {
       orderBy: { date: 'asc' },
     });
 
-    return NextResponse.json(availabilities);
+    // Enriquece com vagas restantes por data
+    const enriched = await Promise.all(availabilities.map(async (av) => {
+      const startOfDay = new Date(av.date); startOfDay.setHours(0,0,0,0);
+      const endOfDay = new Date(av.date); endOfDay.setHours(23,59,59,999);
+
+      const agg = await prismadb.booking.aggregate({
+        where: {
+          attractionId,
+          date: { gte: startOfDay, lte: endOfDay },
+          status: { notIn: ['CANCELLED', 'REJECTED'] },
+        },
+        _sum: { participants: true },
+      });
+
+      const booked = agg._sum.participants || 0;
+      return {
+        ...av,
+        bookedCount: booked,
+        remainingSlots: Math.max(0, av.maxParticipants - booked),
+        isFull: booked >= av.maxParticipants,
+      };
+    }));
+
+    return NextResponse.json(enriched);
   } catch (error) {
     console.error('❌ Erro ao buscar disponibilidades:', error);
     return NextResponse.json({ error: 'Erro ao buscar disponibilidades' }, { status: 500 });

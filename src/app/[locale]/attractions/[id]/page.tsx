@@ -19,6 +19,9 @@ interface Availability {
   price: number | null;
   maxParticipants: number;
   isAvailable: boolean;
+  bookedCount?: number;
+  remainingSlots?: number;
+  isFull?: boolean;
 }
 
 interface Review {
@@ -541,25 +544,39 @@ export default function AttractionDetailPage() {
                   {selectedDate && !selectedAvailability && <p className="text-red-500 text-sm mt-2">⚠️ {t('dateNotAvailable')}</p>}
                 </div>
                 {selectedAvailability && (
-                  <div className="bg-green-50 p-3 rounded-lg">
-                    <p className="text-green-700 text-sm font-medium">
-                      ✓ {t('dateAvailable')}: {selectedDate ? formatDate(selectedDate) : ''}
-                    </p>
-                    {selectedAvailability.price && selectedAvailability.price !== attraction.price && (
-                      <p className="text-green-600 text-sm">{t('specialPrice')}: R$ {selectedAvailability.price}</p>
+                  <div className={`p-3 rounded-lg ${selectedAvailability.isFull ? 'bg-red-50' : 'bg-green-50'}`}>
+                    {selectedAvailability.isFull ? (
+                      <p className="text-red-600 text-sm font-medium">❌ Data esgotada — sem vagas disponíveis</p>
+                    ) : (
+                      <>
+                        <p className="text-green-700 text-sm font-medium">
+                          ✓ {t('dateAvailable')}: {selectedDate ? formatDate(selectedDate) : ''}
+                        </p>
+                        <p className="text-green-600 text-sm mt-1">
+                          🎫 {selectedAvailability.remainingSlots ?? selectedAvailability.maxParticipants} vaga(s) disponível(is)
+                        </p>
+                        {selectedAvailability.price && selectedAvailability.price !== attraction.price && (
+                          <p className="text-green-600 text-sm">{t('specialPrice')}: R$ {selectedAvailability.price}</p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('participants')}</label>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max={attraction.maxCapacity || 20} 
-                    value={participants} 
-                    onChange={(e) => setParticipants(parseInt(e.target.value) || 1)} 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base" 
+                  <input
+                    type="number"
+                    min="1"
+                    max={selectedAvailability?.remainingSlots ?? selectedAvailability?.maxParticipants ?? attraction.maxCapacity ?? 20}
+                    value={participants}
+                    onChange={(e) => setParticipants(parseInt(e.target.value) || 1)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
                   />
+                  {selectedAvailability && !selectedAvailability.isFull && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Máximo: {selectedAvailability.remainingSlots ?? selectedAvailability.maxParticipants} participante(s)
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('specialRequests')}</label>
@@ -577,12 +594,12 @@ export default function AttractionDetailPage() {
                     <span>{t('total')}</span>
                     <span className="text-blue-600">R$ {calculateTotalPrice().toFixed(2)}</span>
                   </div>
-                  <button 
-                    onClick={handleAddToCart} 
-                    disabled={isAddingToCart || !selectedAvailability} 
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart || !selectedAvailability || !!selectedAvailability?.isFull}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed transition text-sm sm:text-base min-h-[48px]"
                   >
-                    {isAddingToCart ? t('adding') : t('addToCart')}
+                    {selectedAvailability?.isFull ? '❌ Data esgotada' : isAddingToCart ? t('adding') : t('addToCart')}
                   </button>
                   <p className="text-xs text-gray-500 text-center mt-3">🔒 {t('freeCancellation')}</p>
                 </div>

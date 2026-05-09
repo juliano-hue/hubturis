@@ -116,17 +116,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Atração não encontrada' }, { status: 404 });
     }
 
-    // Verificar disponibilidade (opcional - ajuste conforme sua lógica)
-    const existingBooking = await prismadb.booking.findFirst({
+    // Verificar disponibilidade e vagas restantes
+    const bookingDate = new Date(date);
+    const startOfDay = new Date(bookingDate); startOfDay.setHours(0,0,0,0);
+    const endOfDay = new Date(bookingDate); endOfDay.setHours(23,59,59,999);
+
+    // Busca a disponibilidade cadastrada pelo ofertante para este dia
+    const availability = await prismadb.availability.findFirst({
       where: {
         attractionId,
-        date: new Date(date),
-        status: { not: 'CANCELLED' }
+        date: { gte: startOfDay, lte: endOfDay },
+        isAvailable: true,
       }
     });
 
-    if (existingBooking) {
-      return NextResponse.json({ error: 'Data indisponível' }, { status: 400 });
+    if (!availability) {
+      return NextResponse.json({ error: 'Data não disponível para reserva' }, { status: 400 });
+    }
+
+    // Soma participantes de reservas ativas nesta data
+    const existingAgg = await prismadb.booking.aggregate({
+      where: {
+        attractionId,
+        date: { gte: startOfDay, lte: endOfDay },
+        status: { notIn: ['CANCELLED', 'REJECTED'] },
+      },
+      _sum: { participants: true },
+    });
+
+    const alreadyBooked = existingAgg._sum.participants || 0;
+    const remaining = availability.maxParticipants - alreadyBooked;
+
+    if (participants > remaining) {
+      return NextResponse.json({
+        error: `Vagas insuficientes. Restam apenas ${remaining} vaga(s) para esta data.`
+      }, { status: 400 });
+    }
+
+    // Se ficou sem vagas após essa reserva, marca a data como indisponível
+    if (alreadyBooked + participants >= availability.maxParticipants) {
+      await prismadb.availability.update({
+        where: { id: availability.id },
+        data: { isAvailable: false },
+      });
     }
 
     // Criar a reserva
