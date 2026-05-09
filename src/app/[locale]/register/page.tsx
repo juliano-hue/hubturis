@@ -34,6 +34,7 @@ export default function RegisterPage() {
   
   const message = searchParams.get('message');
   const ref = searchParams.get('ref') || '';
+  const redirectUrl = searchParams.get('redirect') || null;
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -108,8 +109,10 @@ export default function RegisterPage() {
       setTimeout(() => {
         if (data.user.role === 'PROVIDER') {
           router.push('/provider/profile');
+        } else if (redirectUrl) {
+          router.push(redirectUrl);
         } else {
-          router.push(`/${locale}/consumer/profile`);
+          router.push(`/${locale}/consumer`);
         }
       }, 1500);
 

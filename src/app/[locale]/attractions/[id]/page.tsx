@@ -210,7 +210,13 @@ export default function AttractionDetailPage() {
 
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      router.push(`/${locale}/register?message=CADASTRE-SE OU FAÇA O SEU LOGIN`);
+      // Salva intenção no sessionStorage para retomar após login
+      sessionStorage.setItem('pendingAttraction', JSON.stringify({
+        attractionId: attraction?.id,
+        date: selectedAvailability?.date,
+        participants,
+      }));
+      router.push(`/${locale}/login?redirect=/${locale}/attractions/${attraction?.id}`);
       return;
     }
 
@@ -594,6 +600,19 @@ export default function AttractionDetailPage() {
                     <span>{t('total')}</span>
                     <span className="text-blue-600">R$ {calculateTotalPrice().toFixed(2)}</span>
                   </div>
+
+                  {/* Aviso para visitantes não logados */}
+                  {!localStorage.getItem('userId') && selectedAvailability && !selectedAvailability.isFull && (
+                    <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                      <p className="text-blue-700 text-sm font-medium">
+                        🔑 Para contratar, faça login ou cadastre-se
+                      </p>
+                      <p className="text-blue-500 text-xs mt-1">
+                        É rápido e gratuito — voltará para esta página após o login
+                      </p>
+                    </div>
+                  )}
+
                   <button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart || !selectedAvailability || !!selectedAvailability?.isFull}

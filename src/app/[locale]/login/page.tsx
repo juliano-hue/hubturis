@@ -46,6 +46,7 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const params = useParams();
   const locale = params?.locale as string || 'pt';
+  const redirectUrl = searchParams?.get('redirect') || null;
   const t = useTranslations('login');
   const common = useTranslations('common');
   
@@ -102,6 +103,8 @@ function LoginPageContent() {
             localStorage.setItem('adminLoggedIn', 'true');
             localStorage.setItem('adminEmail', session.user.email);
             router.push('/admin');
+          } else if (redirectUrl) {
+            router.push(redirectUrl);
           } else {
             router.push(`/${locale}/consumer`);
           }
