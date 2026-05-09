@@ -12,6 +12,12 @@ export async function GET(
       return NextResponse.json({ error: 'ID da atração é obrigatório' }, { status: 400 });
     }
 
+    // Incrementa viewCount de forma assíncrona (não bloqueia a resposta)
+    prismadb.attraction.update({
+      where: { id },
+      data: { viewCount: { increment: 1 } },
+    }).catch(() => {}); // silencia erro se campo não existir ainda
+
     const attraction = await prismadb.attraction.findUnique({
       where: { id },
       include: {
