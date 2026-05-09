@@ -165,7 +165,13 @@
     "registerError": "Erro ao criar conta. Tente novamente.",
     "registerSuccess": "✅ Conta criada com sucesso! Redirecionando...",
     "connectionError": "Erro de conexão. Verifique sua internet e tente novamente.",
-    "haveAccount": "Já tem uma conta?"
+    "haveAccount": "Já tem uma conta?",
+    "acceptTerms": "Li e aceito os",
+    "termsLink": "Termos de Uso",
+    "and": "e a",
+    "privacyLink": "Política de Privacidade",
+    "acceptTermsSuffix": ", incluindo o tratamento dos meus dados pessoais conforme a LGPD.",
+    "acceptTermsError": "Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar."
   },
   "consumer": {
     "welcomeBack": "Bem-vindo de volta!",

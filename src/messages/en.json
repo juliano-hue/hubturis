@@ -164,7 +164,13 @@
     "registerError": "Error creating account. Please try again.",
     "registerSuccess": "✅ Account created successfully! Redirecting...",
     "connectionError": "Connection error. Please check your internet and try again.",
-    "haveAccount": "Already have an account?"
+    "haveAccount": "Already have an account?",
+    "acceptTerms": "I have read and accept the",
+    "termsLink": "Terms of Use",
+    "and": "and the",
+    "privacyLink": "Privacy Policy",
+    "acceptTermsSuffix": ", including the processing of my personal data in accordance with Brazil's LGPD.",
+    "acceptTermsError": "You must accept the Terms of Use and Privacy Policy to continue."
   },
   "consumer": {
     "welcomeBack": "Welcome back!",

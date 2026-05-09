@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 
 type Tab = 'overview' | 'users' | 'providers' | 'attractions' | 'bookings' | 'plans';
 
@@ -100,9 +101,15 @@ export default function AdminPage() {
     setUsers(u => u.map(x => x.id === id ? { ...x, planType } : x));
   };
 
-  const logout = () => {
+  const logout = async () => {
     localStorage.clear();
-    router.push('/pt/login');
+    sessionStorage.clear();
+    document.cookie.split(';').forEach(cookie => {
+      const [name] = cookie.split('=');
+      if (name.trim()) document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
+    await signOut({ redirect: false });
+    window.location.href = '/';
   };
 
   const filteredUsers = users.filter(u =>

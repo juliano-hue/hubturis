@@ -78,7 +78,7 @@ export default function RegisterPage() {
     }
 
     if (!acceptedTerms) {
-      setError('Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.');
+      setError(t('acceptTermsError'));
       return;
     }
 
@@ -241,15 +241,15 @@ export default function RegisterPage() {
               className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer flex-shrink-0"
             />
             <label htmlFor="acceptTerms" className="text-sm text-gray-600 cursor-pointer leading-relaxed">
-              Li e aceito os{' '}
+              {t('acceptTerms')}{' '}
               <Link href={`/${locale}/terms`} target="_blank" className="text-blue-600 hover:underline font-medium">
-                Termos de Uso
+                {t('termsLink')}
               </Link>{' '}
-              e a{' '}
+              {t('and')}{' '}
               <Link href={`/${locale}/privacy`} target="_blank" className="text-blue-600 hover:underline font-medium">
-                Política de Privacidade
+                {t('privacyLink')}
               </Link>
-              , incluindo o tratamento dos meus dados pessoais conforme a LGPD.
+              {t('acceptTermsSuffix')}
             </label>
           </div>
 
