@@ -127,12 +127,7 @@ export default function HomePage() {
 
 
   const handleAttractionClick = (attractionId: string) => {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      router.push(`/${locale}/register?message=CADASTRE-SE OU FAÇA O SEU LOGIN`);
-    } else {
-      router.push(`/${locale}/attractions/${attractionId}`);
-    }
+    router.push(`/${locale}/attractions/${attractionId}`);
   };
 
   const getImageUrl = (attraction: Attraction) => {
