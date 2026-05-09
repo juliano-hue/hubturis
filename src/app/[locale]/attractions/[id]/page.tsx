@@ -340,8 +340,43 @@ export default function AttractionDetailPage() {
     return '';
   };
 
+  const jsonLd = attraction ? {
+    '@context': 'https://schema.org',
+    '@type': 'TouristAttraction',
+    name: attraction.title,
+    description: attraction.description,
+    image: attraction.images?.[0],
+    url: `https://hubturis.com.br/${locale}/attractions/${attractionId}`,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: attraction.city,
+      addressRegion: attraction.state,
+      addressCountry: 'BR',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: attraction.price,
+      priceCurrency: 'BRL',
+      availability: 'https://schema.org/InStock',
+      seller: { '@type': 'Organization', name: 'HubTuris' },
+    },
+    aggregateRating: averageRating > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: averageRating.toFixed(1),
+      reviewCount: totalReviews,
+      bestRating: 5,
+      worstRating: 1,
+    } : undefined,
+  } : null;
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <div className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex justify-between items-center">
           <Link href={`/attractions`} className="text-blue-600 hover:text-blue-800 flex items-center gap-2 text-sm sm:text-base">
