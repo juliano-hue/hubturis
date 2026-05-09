@@ -279,7 +279,7 @@ export default function ProviderDashboard() {
                 </div>
               </Link>
               <Link
-                href="/provider/attractions/new"
+                href="/provider/plan"
                 className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-2xl p-5 flex items-center gap-4 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
                 <div className="text-4xl">⚡</div>

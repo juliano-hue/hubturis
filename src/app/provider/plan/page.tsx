@@ -85,8 +85,10 @@ export default function ProviderPlanPage() {
       {/* HEADER */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-10 px-4">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <Link href="/provider/dashboard" className="text-white/70 hover:text-white text-sm">← Dashboard</Link>
+          <div className="flex items-center gap-3 mb-4">
+            <Link href="/provider/dashboard" className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-medium px-4 py-2 rounded-full transition text-sm backdrop-blur-sm">
+              ← Voltar ao Dashboard
+            </Link>
           </div>
           <h1 className="text-3xl font-bold mb-1">Meu Plano & Visibilidade</h1>
           <p className="text-blue-100">Gerencie seu plano e aumente a visibilidade das suas atrações</p>
