@@ -25,7 +25,7 @@
   },
   "home": {
     "hero": {
-      "title": "Descubre Brasil",
+      "title": "Descubre nuestra Región",
       "subtitle": "Las mejores experiencias y tours en un solo lugar",
       "searchPlaceholder": "¿Para dónde quieres ir?",
       "searchButton": "Buscar"
@@ -44,7 +44,7 @@
     "backToDashboard": "Volver a mi Dashboard",
     "experiencesCount": "+{count} experiencias",
     "hero": {
-      "title": "Descubre Brasil",
+      "title": "Descubre nuestra Región",
       "subtitle": "Las experiencias más increíbles te esperan.",
       "searchPlaceholder": "Buscar por destino, atracción o categoría...",
       "searchButton": "Buscar"
