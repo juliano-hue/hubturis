@@ -59,10 +59,10 @@ export async function GET(req: NextRequest) {
     });
 
     if (!user?.consumerProfile) {
-      return NextResponse.json({ profile: null }, { status: 200 });
+      return NextResponse.json(null, { status: 200 });
     }
 
-    return NextResponse.json({ profile: user.consumerProfile });
+    return NextResponse.json(user.consumerProfile);
   } catch (error) {
     console.error("Erro ao buscar perfil:", error);
     return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });
