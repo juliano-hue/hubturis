@@ -1,45 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Credenciais válidas para acesso ao site
-const VALID_CREDENTIALS = [
-  { username: 'jrerzinger', password: '984698@Ju' },
-  { username: 'frank', password: 'provider@123' },
-  { username: 'turista', password: 'turista@t' },
-  { username: 'sponsor3', password: 'sponsor@123' },
-];
+function getValidCredentials(): Array<{ username: string; password: string }> {
+  const raw = process.env.SITE_AUTH_CREDENTIALS || '';
+  return raw
+    .split(',')
+    .map((entry) => {
+      const [username, ...rest] = entry.trim().split('|');
+      return { username, password: rest.join('|') };
+    })
+    .filter((c) => c.username && c.password);
+}
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
-    
-    const isValid = VALID_CREDENTIALS.some(
-      cred => cred.username === username && cred.password === password
+
+    const credentials = getValidCredentials();
+    const isValid = credentials.some(
+      (c) => c.username === username && c.password === password
     );
-    
+
     if (isValid) {
-      // Criar um cookie de autenticação do site
       const response = NextResponse.json({ success: true });
-      
-      // Cookie com expiração de 24 horas
       response.cookies.set('site_auth', 'authenticated', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60, // 1 horas
+        maxAge: 60 * 60,
         path: '/',
       });
-      
       return response;
     }
-    
-    return NextResponse.json(
-      { error: 'Usuário ou senha inválidos' },
-      { status: 401 }
-    );
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Erro interno' },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: 'Usuário ou senha inválidos' }, { status: 401 });
+  } catch {
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
 

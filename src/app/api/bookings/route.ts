@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import prismadb from '@/lib/prismadb';
 import { authOptions } from '@/lib/auth';
+import { rateLimit } from '@/lib/rate-limit';
+
+const bookingRateLimit = rateLimit({ windowMs: 60 * 1000, maxRequests: 10 });
 
 // GET - Listar reservas do usuário logado
 export async function GET(req: NextRequest) {
@@ -88,6 +91,9 @@ export async function GET(req: NextRequest) {
 
 // POST - Criar nova reserva
 export async function POST(req: NextRequest) {
+  const limited = bookingRateLimit(req);
+  if (limited) return limited;
+
   try {
     // Aceita NextAuth session OU x-user-id header (localStorage auth)
     const session = await getServerSession(authOptions);

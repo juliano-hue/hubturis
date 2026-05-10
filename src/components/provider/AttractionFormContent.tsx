@@ -234,13 +234,10 @@ export default function AttractionFormContent({ attractionId: propId }: Props) {
 
         {/* HEADER */}
         <div className="mb-6 sm:mb-8">
-          <button type="button" onClick={() => router.push('/provider/dashboard')}
+          <button type="button" onClick={() => router.push('/provider/my-attractions')}
             className="w-full py-4 mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white text-base sm:text-lg font-bold rounded-2xl shadow-xl transition-all duration-300 flex items-center justify-center gap-3">
-            📊 Voltar ao Dashboard
+            🏖️ Voltar para Minhas Atrações
           </button>
-          <Link href="/provider/my-attractions" className="text-blue-600 hover:text-blue-700 text-sm inline-block">
-            ← Voltar para minhas atrações
-          </Link>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">
             {isEdit ? 'Editar Atração' : 'Cadastrar Nova Atração'}
           </h1>
@@ -330,9 +327,19 @@ export default function AttractionFormContent({ attractionId: propId }: Props) {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Capacidade Máxima</label>
-              <input type="number" name="maxCapacity" min="1" value={formData.maxCapacity} onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Capacidade Máxima
+                {formData.pricingType === 'FLAT_RATE' && <span className="text-red-500 ml-1">*</span>}
+              </label>
+              {formData.pricingType === 'FLAT_RATE' ? (
+                <input type="number" name="maxCapacity" min="1" required value={formData.maxCapacity} onChange={handleInputChange}
+                  placeholder="Ex: 4"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+              ) : (
+                <div className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-base bg-gray-50 text-gray-400 cursor-not-allowed">
+                  Não aplicável para precificação por pessoa
+                </div>
+              )}
             </div>
           </div>
 

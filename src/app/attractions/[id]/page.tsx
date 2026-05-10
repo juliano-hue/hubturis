@@ -156,11 +156,12 @@ export default function AttractionDetailPage() {
 
   const formatPriceDisplay = () => {
     if (!attraction) return '';
+    const priceFormatted = attraction.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (attraction.pricingType === 'FLAT_RATE') {
       const maxCap = attraction.maxCapacity ?? 0;
-      return `R$ ${attraction.price} (preço fechado para até ${maxCap} pessoas)`;
+      return `R$ ${priceFormatted} (preço fechado — até ${maxCap} pessoas)`;
     }
-    return `R$ ${attraction.price} / pessoa`;
+    return `R$ ${priceFormatted}/pessoa`;
   };
 
   const formatDate = (date: Date) => {

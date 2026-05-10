@@ -6,19 +6,16 @@ import { useTranslations } from 'next-intl';
 
 export const dynamic = 'force-dynamic';
 
-// ====== MÁSCARAS ======
-const maskCPF = (v: string) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-const maskPhone = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 11); if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim(); return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim(); };
-const maskCard = (v: string) => v.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+const maskCPF    = (v: string) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+const maskPhone  = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 11); if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim(); return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim(); };
 const maskExpiry = (v: string) => v.replace(/\D/g, '').slice(0, 4).replace(/(\d{2})(\d)/, '$1/$2');
-const maskCVV = (v: string) => v.replace(/\D/g, '').slice(0, 4);
+const maskLastFour = (v: string) => v.replace(/\D/g, '').slice(0, 4);
 
 const MASKS: Record<string, (v: string) => string> = {
   cpf: maskCPF,
   phone: maskPhone,
-  cardNumber: maskCard,
+  cardLastFour: maskLastFour,
   cardExpiry: maskExpiry,
-  cardCvv: maskCVV,
 };
 
 const ESTADOS = ['AC','AL','AP','AM','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
@@ -26,10 +23,13 @@ const ESTADOS = ['AC','AL','AP','AM','CE','DF','ES','GO','MA','MT','MS','MG','PA
 interface ConsumerProfile {
   fullName: string; cpf: string; phone: string; address: string;
   city: string; state: string; paymentType: string;
-  cardNumber: string; cardExpiry: string; cardCvv: string; cardBrand: string;
+  cardLastFour: string; cardExpiry: string; cardBrand: string;
 }
 
-const empty: ConsumerProfile = { fullName: '', cpf: '', phone: '', address: '', city: '', state: '', paymentType: 'PIX', cardNumber: '', cardExpiry: '', cardCvv: '', cardBrand: 'visa' };
+const empty: ConsumerProfile = {
+  fullName: '', cpf: '', phone: '', address: '', city: '', state: '',
+  paymentType: 'PIX', cardLastFour: '', cardExpiry: '', cardBrand: 'visa',
+};
 
 export default function ConsumerProfilePage() {
   const router = useRouter();
@@ -60,11 +60,15 @@ export default function ConsumerProfilePage() {
         if (data) {
           setFormData({
             fullName: data.fullName || name || '',
-            cpf: data.cpf || '', phone: data.phone || '',
-            address: data.address || '', city: data.city || '', state: data.state || '',
+            cpf: maskCPF(data.cpf || ''),
+            phone: maskPhone(data.phone || ''),
+            address: data.address || '',
+            city: data.city || '',
+            state: data.state || '',
             paymentType: data.paymentType || 'PIX',
-            cardNumber: data.cardNumber || '', cardExpiry: data.cardExpiry || '',
-            cardCvv: data.cardCvv || '', cardBrand: data.cardBrand || 'visa',
+            cardLastFour: data.cardLastFour || '',
+            cardExpiry: maskExpiry(data.cardExpiry || ''),
+            cardBrand: data.cardBrand || 'visa',
           });
         }
         setLoading(false);
@@ -106,7 +110,6 @@ export default function ConsumerProfilePage() {
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-3xl mx-auto">
 
-        {/* BOTÃO DASHBOARD — igual às outras páginas */}
         <button
           type="button"
           onClick={() => router.push(`/${locale}/consumer`)}
@@ -148,9 +151,9 @@ export default function ConsumerProfilePage() {
                   <p className="text-sm text-gray-500">{t('paymentType')}</p>
                   <p className="font-medium text-gray-900">{paymentLabel(formData.paymentType)}</p>
                 </div>
-                {formData.paymentType === 'credit_card' && formData.cardNumber && (
+                {formData.paymentType === 'credit_card' && formData.cardLastFour && (
                   <>
-                    <div><p className="text-sm text-gray-500">{t('cardNumber')}</p><p className="font-medium">**** **** **** {formData.cardNumber.replace(/\s/g,'').slice(-4)}</p></div>
+                    <div><p className="text-sm text-gray-500">{t('cardNumber')}</p><p className="font-medium">**** **** **** {formData.cardLastFour}</p></div>
                     <div><p className="text-sm text-gray-500">{t('cardExpiry')}</p><p className="font-medium">{formData.cardExpiry || '—'}</p></div>
                     <div><p className="text-sm text-gray-500">{t('cardBrand')}</p><p className="font-medium capitalize">{formData.cardBrand || '—'}</p></div>
                   </>
@@ -164,7 +167,7 @@ export default function ConsumerProfilePage() {
             </div>
           </div>
         ) : (
-          /* ====== FORMULÁRIO COM MÁSCARAS ====== */
+          /* ====== FORMULÁRIO ====== */
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-6 space-y-5">
 
             <h3 className="text-lg font-semibold text-gray-800 pb-2 border-b">👤 {t('personalInfo')}</h3>
@@ -227,26 +230,23 @@ export default function ConsumerProfilePage() {
 
             {formData.paymentType === 'credit_card' && (
               <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('cardNumber')}</label>
-                  <input type="text" name="cardNumber" value={formData.cardNumber} onChange={handleChange}
-                    placeholder="0000 0000 0000 0000"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-base font-mono" />
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
+                  🔒 Os dados completos do cartão serão inseridos no momento do pagamento, diretamente no gateway seguro. Aqui você pode salvar apenas os últimos 4 dígitos para identificação.
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Últimos 4 dígitos</label>
+                    <input type="text" name="cardLastFour" value={formData.cardLastFour} onChange={handleChange}
+                      placeholder="0000" maxLength={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-base font-mono text-center" />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{t('cardExpiry')}</label>
                     <input type="text" name="cardExpiry" value={formData.cardExpiry} onChange={handleChange}
                       placeholder="MM/AA"
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-base text-center" />
                   </div>
-                  <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-                    <input type="text" name="cardCvv" value={formData.cardCvv} onChange={handleChange}
-                      placeholder="000"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-base text-center" />
-                  </div>
-                  <div className="col-span-1">
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{t('cardBrand')}</label>
                     <select name="cardBrand" value={formData.cardBrand} onChange={handleChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-base bg-white">

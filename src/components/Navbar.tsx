@@ -19,14 +19,24 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoExists, setLogoExists] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const [localAuth, setLocalAuth] = useState<{id:string,role:string,name:string} | null>(null);
 
+  // Lê localStorage de forma síncrona na primeira renderização do cliente
+  // (seguro pois o Navbar é carregado com ssr:false — nunca roda no servidor)
+  const [localAuth, setLocalAuth] = useState<{id:string,role:string,name:string} | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const id = localStorage.getItem('userId');
+    if (!id) return null;
+    return { id, role: localStorage.getItem('userRole') || '', name: localStorage.getItem('userName') || '' };
+  });
+
+  // Relê o localStorage em cada mudança de rota para refletir login/logout
   useEffect(() => {
     const id = localStorage.getItem('userId');
     const role = localStorage.getItem('userRole');
     const name = localStorage.getItem('userName') || '';
     if (id) setLocalAuth({ id, role: role || '', name });
-  }, []);
+    else setLocalAuth(null);
+  }, [pathname]);
 
   const isLoggedIn = status === 'authenticated' || !!localAuth;
   const sessionUser = session?.user as any;

@@ -57,18 +57,17 @@ model ConsumerProfile {
   id          String   @id @default(uuid())
   userId      String   @unique
   fullName    String
-  cpf         String   @unique
+  cpf         String?  @unique
   phone       String
   address     String
   city        String
   state       String   @db.VarChar(2)
-  paymentType String
-  cardNumber  String?
-  cardExpiry  String?
-  cardCvv     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  cardBrand   String?
+  paymentType  String
+  cardLastFour String?
+  cardExpiry   String?
+  cardBrand    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("consumer_profiles")

@@ -3,16 +3,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prismadb } from "@/lib/prismadb";
 
-// Resolve userId tanto via NextAuth session quanto via header/query (localStorage auth)
 async function resolveUserId(req: NextRequest): Promise<string | null> {
-  // 1. Tenta NextAuth session
   const session = await getServerSession(authOptions);
   if (session?.user?.email) {
     const user = await prismadb.user.findUnique({ where: { email: session.user.email }, select: { id: true } });
     if (user) return user.id;
   }
 
-  // 2. Fallback: header x-user-id ou query param userId
   const headerId = req.headers.get('x-user-id');
   if (headerId) return headerId;
 
@@ -23,6 +20,14 @@ async function resolveUserId(req: NextRequest): Promise<string | null> {
   return null;
 }
 
+// Extrai apenas os últimos 4 dígitos do número do cartão
+function maskCardNumber(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length < 4) return null;
+  return digits.slice(-4);
+}
+
 async function handleSave(req: NextRequest) {
   try {
     const userId = await resolveUserId(req);
@@ -31,15 +36,32 @@ async function handleSave(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { fullName, cpf, phone, address, city, state, paymentType, cardNumber, cardExpiry, cardCvv, cardBrand } = body;
+    const { fullName, cpf, phone, address, city, state, paymentType, cardNumber, cardExpiry, cardBrand } = body;
+    // cardCvv é ignorado — CVV jamais pode ser armazenado (PCI DSS)
+
+    const cardLastFour = maskCardNumber(cardNumber);
 
     const updatedProfile = await prismadb.consumerProfile.upsert({
       where: { userId },
-      update: { fullName, cpf, phone, address, city, state, paymentType, cardNumber, cardExpiry, cardCvv, cardBrand },
-      create: { userId, fullName, cpf: cpf || '', phone: phone || '', address: address || '', city: city || '', state: state || '', paymentType: paymentType || 'PIX', cardNumber, cardExpiry, cardCvv, cardBrand },
+      update: { fullName, cpf, phone, address, city, state, paymentType, cardLastFour, cardExpiry, cardBrand },
+      create: {
+        userId,
+        fullName,
+        cpf: cpf || '',
+        phone: phone || '',
+        address: address || '',
+        city: city || '',
+        state: state || '',
+        paymentType: paymentType || 'PIX',
+        cardLastFour,
+        cardExpiry,
+        cardBrand,
+      },
     });
 
-    return NextResponse.json({ success: true, profile: updatedProfile });
+    // Nunca retornar dados completos de cartão — apenas os últimos 4 dígitos
+    const { ...safeProfile } = updatedProfile;
+    return NextResponse.json({ success: true, profile: safeProfile });
   } catch (error) {
     console.error("Erro ao salvar perfil:", error);
     return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });
@@ -62,7 +84,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(null, { status: 200 });
     }
 
-    return NextResponse.json(user.consumerProfile);
+    // Retorna o perfil sem nenhum campo sensível completo de cartão
+    const { ...safeProfile } = user.consumerProfile;
+    return NextResponse.json(safeProfile);
   } catch (error) {
     console.error("Erro ao buscar perfil:", error);
     return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });

@@ -192,11 +192,12 @@ export default function AttractionDetailPage() {
 
   const formatPriceDisplay = () => {
     if (!attraction) return '';
+    const priceFormatted = attraction.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (attraction.pricingType === 'FLAT_RATE') {
       const maxCap = attraction.maxCapacity ?? 0;
-      return `R$ ${attraction.price} (${t('flatRatePrice', { maxCapacity: maxCap })})`;
+      return `R$ ${priceFormatted} (preço fechado — até ${maxCap} pessoas)`;
     }
-    return `R$ ${attraction.price} / ${t('perPerson')}`;
+    return `R$ ${priceFormatted}/pessoa`;
   };
 
   const formatDate = (date: Date) => {

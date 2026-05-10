@@ -22,6 +22,7 @@ interface Attraction {
   city: string;
   state: string;
   price: number;
+  pricingType: string;
   duration: number | null;
   maxCapacity: number | null;
   category: string | null;
@@ -235,7 +236,11 @@ export default function MyAttractionsPage() {
                     {/* Preço */}
                     <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white/95 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-1.5 shadow-lg">
                       <span className="text-blue-600 font-bold text-xs sm:text-sm">{formatPrice(attr.price)}</span>
-                      <span className="text-gray-500 text-xs">/pessoa</span>
+                      <span className="text-gray-500 text-xs">
+                        {attr.pricingType === 'FLAT_RATE'
+                          ? `/até ${attr.maxCapacity ?? '?'} pessoas`
+                          : '/pessoa'}
+                      </span>
                     </div>
 
                     {/* Categoria */}
