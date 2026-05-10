@@ -3,65 +3,40 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prismadb } from "@/lib/prismadb";
 
+// Resolve userId tanto via NextAuth session quanto via header/query (localStorage auth)
+async function resolveUserId(req: NextRequest): Promise<string | null> {
+  // 1. Tenta NextAuth session
+  const session = await getServerSession(authOptions);
+  if (session?.user?.email) {
+    const user = await prismadb.user.findUnique({ where: { email: session.user.email }, select: { id: true } });
+    if (user) return user.id;
+  }
+
+  // 2. Fallback: header x-user-id ou query param userId
+  const headerId = req.headers.get('x-user-id');
+  if (headerId) return headerId;
+
+  const { searchParams } = new URL(req.url);
+  const queryId = searchParams.get('userId');
+  if (queryId) return queryId;
+
+  return null;
+}
+
 async function handleSave(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const userId = await resolveUserId(req);
+    if (!userId) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
     const body = await req.json();
-    const {
-      fullName,
-      cpf,
-      phone,
-      address,
-      city,
-      state,
-      paymentType,
-      cardNumber,
-      cardExpiry,
-      cardCvv,
-      cardBrand,
-    } = body;
-
-    const user = await prismadb.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
-    }
+    const { fullName, cpf, phone, address, city, state, paymentType, cardNumber, cardExpiry, cardCvv, cardBrand } = body;
 
     const updatedProfile = await prismadb.consumerProfile.upsert({
-      where: { userId: user.id },
-      update: {
-        fullName,
-        cpf,
-        phone,
-        address,
-        city,
-        state,
-        paymentType,
-        cardNumber,
-        cardExpiry,
-        cardCvv,
-        cardBrand,
-      },
-      create: {
-        userId: user.id,
-        fullName,
-        cpf,
-        phone,
-        address,
-        city,
-        state,
-        paymentType,
-        cardNumber,
-        cardExpiry,
-        cardCvv,
-        cardBrand,
-      },
+      where: { userId },
+      update: { fullName, cpf, phone, address, city, state, paymentType, cardNumber, cardExpiry, cardCvv, cardBrand },
+      create: { userId, fullName, cpf: cpf || '', phone: phone || '', address: address || '', city: city || '', state: state || '', paymentType: paymentType || 'PIX', cardNumber, cardExpiry, cardCvv, cardBrand },
     });
 
     return NextResponse.json({ success: true, profile: updatedProfile });
@@ -71,23 +46,23 @@ async function handleSave(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const userId = await resolveUserId(req);
+    if (!userId) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
     const user = await prismadb.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: userId },
       include: { consumerProfile: true },
     });
 
     if (!user?.consumerProfile) {
-      return NextResponse.json({ error: "Perfil não encontrado" }, { status: 404 });
+      return NextResponse.json({ profile: null }, { status: 200 });
     }
 
-    return NextResponse.json(user.consumerProfile);
+    return NextResponse.json({ profile: user.consumerProfile });
   } catch (error) {
     console.error("Erro ao buscar perfil:", error);
     return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });
