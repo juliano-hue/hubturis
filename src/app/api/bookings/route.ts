@@ -9,12 +9,27 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
     
     // CORREÇÃO: Verificar se o usuário existe e tem ID
-    const userId = (session?.user as any)?.id;
+    const userId = (session?.user as any)?.id || req.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const userRole = (session?.user as any)?.role;
+    // Suporte a providerId via query param (extrato financeiro)
+    const { searchParams } = new URL(req.url);
+    const providerId = searchParams.get('providerId');
+    if (providerId) {
+      const bookings = await prismadb.booking.findMany({
+        where: { attraction: { providerId } },
+        include: {
+          attraction: { select: { id: true, title: true, city: true, state: true } },
+          consumer: { select: { id: true, name: true, email: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      return NextResponse.json(bookings);
+    }
+
+    const userRole = (session?.user as any)?.role || 'CONSUMER';
 
     let bookings;
 
@@ -74,10 +89,9 @@ export async function GET(req: NextRequest) {
 // POST - Criar nova reserva
 export async function POST(req: NextRequest) {
   try {
+    // Aceita NextAuth session OU x-user-id header (localStorage auth)
     const session = await getServerSession(authOptions);
-    
-    // CORREÇÃO: Verificar se o usuário existe e tem ID
-    const userId = (session?.user as any)?.id;
+    const userId = (session?.user as any)?.id || req.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
