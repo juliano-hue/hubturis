@@ -114,9 +114,10 @@ export default function AttractionDetailPage() {
 
   const getAvailabilityForDate = (date: Date): Availability | null => {
     if (!attraction) return null;
-    const dateStr = date.toISOString().split('T')[0];
-    return attraction.availabilities.find(a => 
-      a.isAvailable && a.date.split('T')[0] === dateStr
+    // Use local year/month/day to avoid UTC offset shifting the date
+    const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return attraction.availabilities.find((a: Availability) =>
+      a.isAvailable && a.date.split('T')[0] === localDateStr
     ) || null;
   };
 
@@ -343,10 +344,15 @@ export default function AttractionDetailPage() {
 
   const tileClassName = ({ date, view }: { date: Date; view: string }) => {
     if (view === 'month') {
-      if (isDateAvailable(date)) return 'bg-green-100 text-green-800 rounded-full';
-      return 'text-gray-300 cursor-not-allowed';
+      if (isDateAvailable(date)) return 'available-tile';
+      return 'unavailable-tile';
     }
     return '';
+  };
+
+  const tileDisabled = ({ date, view }: { date: Date; view: string }) => {
+    if (view === 'month') return !isDateAvailable(date);
+    return false;
   };
 
   const jsonLd = attraction ? {
@@ -539,13 +545,25 @@ export default function AttractionDetailPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('selectDate')}</label>
-                  <Calendar 
-                    onChange={(value) => setSelectedDate(value as Date)} 
-                    value={selectedDate} 
-                    minDate={new Date()} 
-                    tileClassName={tileClassName} 
-                    className="rounded-lg border-0 shadow-sm w-full" 
-                    locale="pt-BR" 
+                  <style>{`
+                    .available-tile { background: #dcfce7 !important; color: #166534 !important; border-radius: 50% !important; font-weight: 600; }
+                    .unavailable-tile { color: #d1d5db !important; cursor: not-allowed !important; }
+                    .react-calendar__tile:disabled { background: transparent !important; }
+                    .react-calendar__tile:disabled abbr { color: #d1d5db !important; }
+                  `}</style>
+                  <Calendar
+                    onChange={(value) => setSelectedDate(value as Date)}
+                    value={selectedDate}
+                    defaultActiveStartDate={
+                      attraction?.availabilities?.filter((a: any) => a.isAvailable && new Date(a.date) >= new Date()).length > 0
+                        ? new Date(attraction.availabilities.filter((a: any) => a.isAvailable && new Date(a.date) >= new Date()).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())[0].date)
+                        : new Date()
+                    }
+                    minDate={new Date()}
+                    tileClassName={tileClassName}
+                    tileDisabled={tileDisabled}
+                    className="rounded-lg border-0 shadow-sm w-full"
+                    locale="pt-BR"
                   />
                   {selectedDate && !selectedAvailability && <p className="text-red-500 text-sm mt-2">⚠️ {t('dateNotAvailable')}</p>}
                 </div>
